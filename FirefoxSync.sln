@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FirefoxSync", "FirefoxSync\FirefoxSync.fsproj", "{61A72D0A-FF89-4C25-A1F9-F3DE7BAB0C2B}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FirefoxSyncTest", "FirefoxSyncTest\FirefoxSyncTest.fsproj", "{4672E296-BFE7-40B4-A123-392085D33890}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{4BF43421-366E-4754-A2CF-C6C5F3E126F6}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{61A72D0A-FF89-4C25-A1F9-F3DE7BAB0C2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61A72D0A-FF89-4C25-A1F9-F3DE7BAB0C2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61A72D0A-FF89-4C25-A1F9-F3DE7BAB0C2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61A72D0A-FF89-4C25-A1F9-F3DE7BAB0C2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4672E296-BFE7-40B4-A123-392085D33890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4672E296-BFE7-40B4-A123-392085D33890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4672E296-BFE7-40B4-A123-392085D33890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4672E296-BFE7-40B4-A123-392085D33890}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
