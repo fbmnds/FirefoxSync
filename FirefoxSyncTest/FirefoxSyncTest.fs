@@ -37,11 +37,13 @@ let s = SecretStore.secrets
 //
 [<Fact>]
 let ``base32Decode (mozilla docs example)`` () =
-    "Y4NKPS6YXAVI75XNUVODSR472I" 
-    |> base32'8'9Decode 
-    |> bytesToHex = [|"c7"; "1a"; "a7"; "cb"; "d8"; "b8"; "2a"; "8f"; 
-                      "f6"; "ed"; "a5"; "5c"; "39"; "47"; "9f"; "d2"|]  
-    
+    let x =
+        "Y4NKPS6YXAVI75XNUVODSR472I" 
+        |> base32'8'9Decode 
+        |> bytesToHex 
+    x = [|"c7"; "1a"; "a7"; "cb"; "d8"; "b8"; "2a"; "8f"; 
+          "f6"; "ed"; "a5"; "5c"; "39"; "47"; "9f"; "d2"|]
+    |> Assert.True
 
 // syncKeyBundle
 
@@ -74,8 +76,8 @@ let ``syncKeyBundle (mozilla docs example)`` () =
                      [|"bf"; "9e"; "48"; "ac"; "50"; "a2"; "fc"; "c4"; "0"; "ae"; "4d"; "30";
                        "a5"; "8d"; "c6"; "a8"; "3a"; "77"; "20"; "c3"; "2f"; "58"; "c6"; "f";
                        "d9"; "d0"; "2d"; "b1"; "6e"; "40"; "62"; "16"|])
-    ff_skb'' = ff_skb''' ==> true
-
+    ff_skb'' = ff_skb'''
+    |> Assert.True
 
 // writeCryptoKeysToDisk
 
@@ -85,7 +87,7 @@ let ``writeCryptoKeysToDisk`` () =
         writeCryptoKeysToDisk s.username s.password None
         true
     with | _ -> false
-    ==> true
+    |> Assert.True
 
 
 // getRecordFields/getRecordField
@@ -97,8 +99,8 @@ let ``getRecordFields/getRecordField`` () =
     let x'' = { value = getRecordField x x'.[0]; 
                 name = getRecordField x x'.[1]; 
                 ``type`` = getRecordField x x'.[2] }
-    x <> x'' ==> true
-    
+    x = x''
+    |> Assert.True
 
 // GeneralInfo
 
@@ -112,7 +114,7 @@ let ``fetchInfoCollection/Quota`` () =
         true
     with 
     | _ -> false 
-    ==> true
+    |> Assert.True
 
 
 // Collections
@@ -120,30 +122,31 @@ let ``fetchInfoCollection/Quota`` () =
 let bm = getBookmarks s (getCryptokeysFromDisk s None)
 [<Fact>]
 let ``Collection Bookmark (retrieve bookmarks)`` () =
+    printfn "# bookmarks '= %d" bm.Length
     bm.Length > 800 
-    ==> true
+    |> Assert.True
 
 [<Fact>]
 let ``Collection Bookmark (select children)`` () =
     let bm' = bm |> Array.filter (fun x -> if x.children <> [||] then true else false)
     bm'.Length > 40 
-    ==> true
+    |> Assert.True
 
 [<Fact>]
 let ``Collection Bookmark (select by id)`` () =
     let bm'' = bm |> Array.filter (fun x -> if x.id = (WeaveGUID) "dkqtmNFIvhbg" then true else false)
     bm''.Length = 1
-    ==> true
+    |> Assert.True
 
 [<Fact>]
 let ``Collection Bookmark (select tags)`` () =
     let bm''' = bm |> Array.filter (fun x -> if x.tags <> [||] then true else false)
     bm'''.Length > 1
-    ==> true
+    |> Assert.True
 
 [<Fact>]
 let ``Collection MetaGlobal`` () =
     match (getMetaGlobal s) with
     | Some x -> true
     | _ -> false
-    ==> true
+    |> Assert.True
