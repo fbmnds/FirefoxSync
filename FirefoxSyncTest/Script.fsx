@@ -1,4 +1,4 @@
-﻿#r @"bin\Debug\FirefoxSyncTest.dll"
+﻿#r @".\bin\Debug\FirefoxSyncTest.dll"
 
 open FirefoxSyncTest
 

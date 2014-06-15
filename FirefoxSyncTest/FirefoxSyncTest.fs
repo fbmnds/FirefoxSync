@@ -122,8 +122,7 @@ let ``fetchInfoCollection/Quota`` () =
 let bm = getBookmarks s (getCryptokeysFromDisk s None)
 [<Fact>]
 let ``Collection Bookmark (retrieve bookmarks)`` () =
-    printfn "# bookmarks '= %d" bm.Length
-    bm.Length > 800 
+    bm.Length > 600 
     |> Assert.True
 
 [<Fact>]
