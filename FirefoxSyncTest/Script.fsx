@@ -1,11 +1,22 @@
-﻿#r @".\bin\Debug\FirefoxSyncTest.dll"
+﻿
+open System
+open System.Reflection
 
+#r @".\bin\Debug\FirefoxSyncTest.dll"
 open FirefoxSyncTest
 
-//#I @"..\packages\FSharp.Data.2.0.8\lib\net40"
-#I @"..\packages\xunit.1.9.2\lib\net20\"
-#r "xunit.dll"
-open Xunit
+#I @"..\packages\NUnit.2.6.3\lib"
+#r "nunit.framework.dll"
+open NUnit
+open NUnit.Framework
+#I @"..\packages\NUnitTestAdapter.1.0\lib"
+#r "nunit.core.dll"
+#r "nunit.core.interfaces.dll"
+open NUnit.Core
+
+//#I @"..\packages\xunit.1.9.2\lib\net20\"
+//#r "xunit.dll"
+//open Xunit
 
 #I @"..\packages\FsCheck.0.9.4.0\lib\net40-Client\"
 #r "FsCheck.dll"
@@ -16,55 +27,58 @@ open FsCheck
 open FsCheck.Xunit
 
 
-//https://github.com/fsharp/FsCheck/blob/master/docs/Documentation.md#implementing-irunner-to-integrate-fscheck-with-mbxncsunit
+//// ... this is for xUnit
+//
+////https://github.com/fsharp/FsCheck/blob/master/docs/Documentation.md#implementing-irunner-to-integrate-fscheck-with-mbxncsunit
+//
+//let xUnitRunner =
+//    { new IRunner with
+//        member x.OnStartFixture t = ()
+//        member x.OnArguments (ntest,args, every) = ()
+//        member x.OnShrink(args, everyShrink) = ()
+//        member x.OnFinished(name,testResult) = 
+//            match testResult with 
+//            | TestResult.True _ -> Assert.True(true)
+//            | _ -> Assert.True(false, Runner.onFinishedToString name testResult) 
+//    }
+//
+//let withxUnitConfig = { Config.Default with Runner = xUnitRunner }
 
-let xUnitRunner =
-    { new IRunner with
-        member x.OnStartFixture t = ()
-        member x.OnArguments (ntest,args, every) = ()
-        member x.OnShrink(args, everyShrink) = ()
-        member x.OnFinished(name,testResult) = 
-            match testResult with 
-            | TestResult.True _ -> Assert.True(true)
-            | _ -> Assert.True(false, Runner.onFinishedToString name testResult) 
-    }
 
-let withxUnitConfig = { Config.Default with Runner = xUnitRunner }
+// NUnit Runner 
+ 
+// http://stackoverflow.com/questions/2798561/how-to-run-nunit-from-my-code
 
+let binDebugDir = Environment.GetEnvironmentVariable("PROJECTS") + @"\FirefoxSync\FirefoxSyncTest\bin\Debug\"
 
-let runSingleTest (f,n) =
+type ScriptTestResult = | TestResult of NUnit.Core.TestResult | String of string
+
+/// Run tests;
+/// print the program's System.Console output
+let simpleTestRunner () = 
     try 
-        f() 
-        printfn "ok %s" n
-        None
-    with | ex -> sprintf "failed : %s" n |> Some
+        CoreExtensions.Host.InitializeService()
+        let runner = new SimpleTestRunner()
+        let package = new TestPackage ( binDebugDir + "FirefoxSyncTest.dll" )
+        let loc = binDebugDir + "FirefoxSyncTest.dll" // Assembly.GetExecutingAssembly().Location
+        runner.Load(package) |> ignore
+        runner.Run( NullListener(), NUnit.Core.TestFilter.Empty, false, LoggingThreshold() )
+        |> (TestResult)
+    with | ex -> String ex.Message
 
-let runTestArray testArray = testArray |> Array.map runSingleTest
+let testResult = simpleTestRunner ()
 
-let printTestResult tests = 
-    tests
-    |> runTestArray
-    |> Array.map (fun x -> match x with | Some x -> printfn "%s" x; false | _ -> true)
-    |> Array.fold (fun (x,y,z) b -> if b then (x,y,z+1) else (b,y+1,z+1)) (true,0,0)
-    |> fun (x,y,z)-> if x then printfn "tests ok" else printfn "%d test(s) of %d failed" y z
+/// Run tests;
+/// swallow the program's System.Console output; 
+/// otherwise apparently equivalent NUnit.Core.TestResult as 'simpleTestRunner'
+let remoteTestRunner () : ScriptTestResult = 
+    try 
+        // CoreExtensions.Host.InitializeService() 
+        let package = new TestPackage( binDebugDir + "FirefoxSyncTest.dll" )
+        let remoteTestRunner = new RemoteTestRunner()
+        remoteTestRunner.Load(package) |> ignore
+        TestResult ( remoteTestRunner.Run( NullListener(), NUnit.Core.TestFilter.Empty, false, LoggingThreshold() ) )
+    with | ex -> String(ex.Message )
 
-
-open System.Reflection
-
-let fft = Assembly.LoadFile @"D:\projects\FirefoxSync\FirefoxSyncTest\bin\Debug\FirefoxSyncTest.dll"
-fft.GetType().GetMethods()
-|> Array.map (fun x -> x.Name)
-
-
-[| (``base32Decode (mozilla docs example)``, "base32Decode (mozilla docs example)")
-   (``buildSyncKeyBundle (mozilla docs example)``, "buildSyncKeyBundle (mozilla docs example)")
-   (``writeCryptoKeysToDisk``, "writeCryptoKeysToDisk")
-   (``getRecordFields/getRecordField``, "getRecordFields/getRecordField")
-   (``fetchInfoCollection/InfoQuota``, "fetchInfoCollection/InfoQuota")
-   (``Collection Bookmark (retrieve bookmarks)``, "Collection Bookmark (retrieve bookmarks)")
-   (``Collection Bookmark (select children)``, "Collection Bookmark (select children)")
-   (``Collection Bookmark (select by id)``, "Collection Bookmark (select by id)")
-   (``Collection Bookmark (select tags)``, "Collection Bookmark (select tags)")
-   (``Collection MetaGlobal``, "Collection MetaGlobal") |]
-|> printTestResult
+//let testResult' = remoteTestRunner ()
 

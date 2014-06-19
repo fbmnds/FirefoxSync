@@ -117,7 +117,7 @@ let ``fetchInfoCollection/InfoQuota`` () : unit =
       fetchInfoQuota s.username s.password
       fetchInfoCollectionUsage s.username s.password
       fetchInfoCollectionCounts s.username s.password ]
-    |> List.map (fun x -> match x with | Success x' -> true | _ -> false)
+    |> List.map (fun x -> match x with | Success x' -> printfn "%A" x'; true | _ -> false)
     |> List.reduce (fun x y -> x && y)  
     |> Assert.True
 
@@ -135,6 +135,7 @@ let bm =
 
 [<Test>]
 let ``Collection Bookmark (retrieve bookmarks)`` () : unit =
+    printfn "%A"  bm
     bm
     |> Results.setOrFail
     |> fun x -> x.Length > 600 
@@ -145,6 +146,7 @@ let ``Collection Bookmark (select children)`` () : unit =
     let bm' = bm 
               |> Results.setOrFail
               |> Array.filter (fun x -> if x.children <> [||] then true else false)
+    printfn "%A"  bm'
     bm'.Length > 40 
     |> Assert.True
 
@@ -153,6 +155,7 @@ let ``Collection Bookmark (select by id)`` () : unit =
     let bm'' = bm 
                |> Results.setOrFail
                |> Array.filter (fun x -> if x.id = (WeaveGUID) "dkqtmNFIvhbg" then true else false)
+    printfn "%A"  bm''
     bm''.Length = 1
     |> Assert.True
 
@@ -161,12 +164,13 @@ let ``Collection Bookmark (select tags)`` () : unit =
     let bm''' = bm
                 |> Results.setOrFail 
                 |> Array.filter (fun x -> if x.tags <> [||] then true else false)
+    printfn "%A"  bm'''
     bm'''.Length > 1
     |> Assert.True
 
 [<Test>]
 let ``Collection MetaGlobal`` () : unit =
     match (getMetaGlobal s) with
-    | Success x -> true
+    | Success x -> printfn "%A" x; true
     | _ -> false
     |> Assert.True
