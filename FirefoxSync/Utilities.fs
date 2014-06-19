@@ -94,14 +94,18 @@ module Utilities =
     let base64urlChars  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_"
 
     let doBase32'8'9 (s : string) = 
-        s.ToUpper().ToCharArray() 
-        |> Array.map (fun x -> match x with | 'L' -> '8' | 'O' -> '9' | _ -> x )
-        |> fun cs -> new string(cs)
+        if s = "" then ""
+        else
+            s.ToUpper().ToCharArray() 
+            |> Array.map (fun x -> match x with | 'L' -> '8' | 'O' -> '9' | _ -> x )
+            |> fun cs -> new string(cs)
 
     let undoBase32'8'9 (s : string) = 
-        s.ToUpper().ToCharArray() 
-        |> Array.map (fun x -> match x with | '8' -> 'L' | '9' -> 'O' | _ -> x )
-        |> fun cs -> new string(cs)
+        if s = "" then ""
+        else
+            s.ToUpper().ToCharArray() 
+            |> Array.map (fun x -> match x with | '8' -> 'L' | '9' -> 'O' | _ -> x )
+            |> fun cs -> new string(cs)
     
     let generateWeaveGUID() = 
         [| for i in [0 .. 11] do yield base64urlChars.Substring(random.Next(63), 1) |]
@@ -111,34 +115,41 @@ module Utilities =
 
     // https://bitbucket.org/devinmartin/base32/src/90d7d530beea52a2a82b187728a06404794600b9/Base32/Base32Encoder.cs?at=default
     let base32Decode (s' : string) = 
-        let s = 
-            s'.ToUpper().ToCharArray() 
-            |> Array.filter (fun x -> if x = '=' then false else true) 
-            |> fun cs -> new string(cs)        
-        let encodedBitCount = 5
-        let byteBitCount = 8
-        if isSubset base32Chars s then       
-            let outputBuffer = Array.create (s.Length * encodedBitCount / byteBitCount) 0uy
-            let mutable workingByte = 0uy
-            let mutable bitsRemaining = byteBitCount
-            let mutable mask = 0
-            let mutable arrayIndex = 0
-            for c in s.ToCharArray() do 
-                let value = base32Chars.IndexOf c
-                if bitsRemaining > encodedBitCount then
-                    mask <- value <<< (bitsRemaining - encodedBitCount)
-                    workingByte <- (workingByte ||| (byte) mask)
-                    bitsRemaining <- bitsRemaining - encodedBitCount
-                else
-                    mask <- value >>> (encodedBitCount - bitsRemaining)
-                    workingByte <- (workingByte ||| (byte) mask)
-                    outputBuffer.[arrayIndex] <- workingByte
-                    arrayIndex <- arrayIndex + 1
-                    workingByte <- (byte)(value <<< (byteBitCount - encodedBitCount + bitsRemaining))
-                    bitsRemaining <- bitsRemaining + byteBitCount - encodedBitCount
-            outputBuffer
+        if s' = "" then [||] |> Success
         else
-            [||]
+            let s = 
+                s'.ToUpper().ToCharArray() 
+                |> Array.filter (fun x -> if x = '=' then false else true) 
+                |> fun cs -> new string(cs)        
+            let encodedBitCount = 5
+            let byteBitCount = 8
+            if isSubset base32Chars s then       
+                try
+                    let outputBuffer = Array.create (s.Length * encodedBitCount / byteBitCount) 0uy
+                    let mutable workingByte = 0uy
+                    let mutable bitsRemaining = byteBitCount
+                    let mutable mask = 0
+                    let mutable arrayIndex = 0
+                    for c in s.ToCharArray() do 
+                        let value = base32Chars.IndexOf c
+                        if bitsRemaining > encodedBitCount then
+                            mask <- value <<< (bitsRemaining - encodedBitCount)
+                            workingByte <- (workingByte ||| (byte) mask)
+                            bitsRemaining <- bitsRemaining - encodedBitCount
+                        else
+                            mask <- value >>> (encodedBitCount - bitsRemaining)
+                            workingByte <- (workingByte ||| (byte) mask)
+                            outputBuffer.[arrayIndex] <- workingByte
+                            arrayIndex <- arrayIndex + 1
+                            workingByte <- (byte)(value <<< (byteBitCount - encodedBitCount + bitsRemaining))
+                            bitsRemaining <- bitsRemaining + byteBitCount - encodedBitCount
+                    outputBuffer 
+                    |> Success
+                with
+                | ex -> Base32DecodeError
+                        |> Results.setError (sprintf "Unspecified Base32 decode error in '%s'" s') ex
+            else
+                Failure [ Base32DecodeError((ErrorLabel) (sprintf "Invalid Base32 character in '%s'" s'), (Stacktrace) "") ]
 
     let base32'8'9Decode (s' : string) = s' |> undoBase32'8'9 |> base32Decode
      
@@ -155,7 +166,7 @@ module Utilities =
     // open RFC5869
 
 
-    let syncKeyBundle username key =
+    let buildSyncKeyBundle username key =
         let info = "Sync-AES_256_CBC-HMAC256" + username
         let hmac256 = new HMACSHA256(key)
         let T1 = hmac256.ComputeHash (Array.append (info |> stringToBytes ) [| 1uy |] )
@@ -194,7 +205,7 @@ module Utilities =
 
     /// Return the server response as a string,
     /// return an empty string in case of error, log error messages to the console.
-    let fetchUrlResponse (url : string) requestMethod 
+    let fetchUrlResponse' (url : string) requestMethod 
                          (credentials: (string*string) option)
                          (data : byte[] option) (contentType : string option) 
                          timeout =    
@@ -229,3 +240,72 @@ module Utilities =
                                    use  reader = new StreamReader(stream)
                                    Console.WriteLine(reader.ReadToEnd()); "" 
         | _ as ex -> printfn "%s" (ex.ToString()); ""
+
+
+    /// Return the server response as a Result<string>
+    let fetchUrlResponse requestMethod 
+                         (credentials: (string*string) option)
+                         (data : byte[] option) (contentType : string option) 
+                         timeout 
+                         (url : string) =    
+        let getRequest () =
+            try
+                let req = WebRequest.Create(url)
+                Success req
+            with 
+            | ex -> Failure [ InvalidUrl ]
+        let setCredentials (reqResult : Result<WebRequest>) =     
+            match reqResult, credentials with
+            | (Failure x, _) -> Failure x
+            | (Success req, Some(username, password)) -> req.Credentials <- new NetworkCredential(username,password); Success (req)
+            | (Success req, _) -> Success req
+        let setMethod (reqResult : Result<WebRequest>) =     
+            match reqResult with
+            | Failure req -> Failure req
+            | Success req -> req.Method <- requestMethod; Success req
+        let sendData (reqResult : Result<WebRequest>) =     
+            match reqResult with
+            | Failure req -> Failure req
+            | Success req -> 
+                match data, contentType with
+                | Some data, Some contentType -> req.ContentType <- contentType; req.ContentLength <- (int64) data.Length
+                | Some data, _ -> req.ContentLength <- (int64) data.Length
+                | _ -> ignore data
+                match data with 
+                | Some data -> 
+                    try
+                        use wstream = req.GetRequestStream() 
+                        wstream.Write(data , 0, (data.Length))
+                        wstream.Flush()
+                        wstream.Close()
+                        Success req
+                    with
+                    | ex -> Results.setError "Send data error" ex SendDataError
+                | _ -> Success req
+        let getResponse (reqResult : Result<WebRequest>) =     
+            match reqResult with
+            | Failure req -> Failure req
+            | Success req ->
+                try
+                    match timeout with
+                    | Some timeout -> req.Timeout <- timeout
+                    | _ -> req.Timeout <- 3 * 60 * 1000
+                    use resp = req.GetResponse()
+                    use strm = resp.GetResponseStream()
+                    let text = (new StreamReader(strm)).ReadToEnd()
+                    Success text
+                with
+                | :? WebException as ex -> 
+                    try
+                        use stream = ex.Response.GetResponseStream()
+                        use  reader = new StreamReader(stream)
+                        Failure [ GetResponseError((ErrorLabel) "Received error response stream", reader.ReadToEnd() |> (Stacktrace))  ]
+                    with 
+                    | _ -> Failure [ GetResponseError((ErrorLabel) "Received empty response stream", (Stacktrace) "") ]
+                | _ as ex -> Results.setError "Get response error" ex GetResponseError
+        getRequest
+        >> setCredentials 
+        >> setMethod
+        >> sendData
+        >> getResponse
+        <| ()

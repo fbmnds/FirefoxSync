@@ -76,6 +76,10 @@
       <HintPath>..\packages\NUnitTestAdapter.1.0\lib\nunit.core.interfaces.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="nunit.util">
       <HintPath>..\packages\NUnitTestAdapter.1.0\lib\nunit.util.dll</HintPath>
       <Private>False</Private>

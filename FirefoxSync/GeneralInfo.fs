@@ -9,53 +9,61 @@ open ServerUrls
 
 module GeneralInfo =  
 
-    let fetchInfoCollections username password =
-        let url = (clusterURL username) + "1.1/" + username + "/info/collections"
-        fetchUrlResponse url "GET" (Some (username, password)) None None None
+    let setClusterURL username collection = 
+        match (clusterURL username) with
+        | Success url -> Success (url + "1.1/" + username + collection)
+        | Failure f -> Failure ( ClusterUrlError((ErrorLabel) (sprintf "Failed to cluster url for collection '%s'" collection), (Stacktrace) "") :: f ) 
 
-    let fetchInfoQuota username password =
-        let url = (clusterURL username) + "1.1/" + username + "/info/quota"
-        fetchUrlResponse url "GET" (Some (username, password)) None None None
+    let fetchCollections username password collection =
+        setClusterURL username collection
+        |> Results.bind (fetchUrlResponse "GET" (Some (username, password)) None None None)
 
-    let fetchInfoCollectionUsage username password =
-        let url = (clusterURL username) + "1.1/" + username + "/info/collection_usage"
-        fetchUrlResponse url "GET" (Some (username, password)) None None None
+    let fetchInfoCollections username password = fetchCollections username password "/info/collections"
+        
+    let fetchInfoQuota username password = fetchCollections username password "/info/quota"
 
-    let fetchInfoCollectionCounts username password =
-        let url = (clusterURL username) + "1.1/" + username + "/info/collection_counts"
-        fetchUrlResponse url "GET" (Some (username, password)) None None None
+    let fetchInfoCollectionUsage username password = fetchCollections username password "/info/collection_usage"
 
-    let deleteStorage username password =
-        let url = (clusterURL username) + "1.1/" + username
-        fetchUrlResponse url "GET" (Some (username, password)) None None None
+    let fetchInfoCollectionCounts username password = fetchCollections username password "/info/collection_counts"
 
-    let fetchMetaGlobal username password =
-        let url = (clusterURL username) + "1.1/" + username + "/storage/meta/global"
-        fetchUrlResponse url "GET" (Some (username, password)) None None None
+//    let deleteStorage username password =
+//        let url = (clusterURL username) + "1.1/" + username
+//        fetchUrlResponse url "GET" (Some (username, password)) None None None
+
+    let fetchMetaGlobal username password = fetchCollections username password "/storage/meta/global"
 
     let getMetaGlobal (secrets : Secret) =
         let parseMetaGlobalPayload p =
-            let p' = JsonValue.Parse p
-            { syncID         = "syncID" |> tryGetString p' |> (WeaveGUID)
-              storageVersion = "storageVersion" |> tryGetIntegerWithDefault p' -99 
-              engines        = "engines" 
-                               |> p'.GetProperty 
-                               |> fun x -> x.Properties 
-                               |> Seq.map (fun (x,y) -> 
-                                               let v = "version" |> tryGetIntegerWithDefault y -99 
-                                               let s = "syncID"  |> tryGetString y |> (WeaveGUID)
-                                               ((Engine) x, { version = v; syncID = s } ))
-                               |> Map.ofSeq
-              declined       = "declined" |> tryGetArray p' |> Array.map (fun x -> x.AsString() |> (Engine)) }            
+            try 
+                let p' = JsonValue.Parse p
+                { syncID         = "syncID" |> tryGetString p' |> (WeaveGUID)
+                  storageVersion = "storageVersion" |> tryGetIntegerWithDefault p' -99 
+                  engines        = "engines" 
+                                   |> p'.GetProperty 
+                                   |> fun x -> x.Properties 
+                                   |> Seq.map (fun (x,y) -> 
+                                                   let v = "version" |> tryGetIntegerWithDefault y -99 
+                                                   let s = "syncID"  |> tryGetString y |> (WeaveGUID)
+                                                   ((Engine) x, { version = v; syncID = s } ))
+                                   |> Map.ofSeq
+                  declined       = "declined" |> tryGetArray p' |> Array.map (fun x -> x.AsString() |> (Engine)) }    
+                |> Success
+            with
+            | ex -> ParseMetaGlobalPayloadError
+                    |> Results.setError (sprintf "Parse error on '/storage/meta/global' payload '%s'" p) ex    
         let parseMetaGlobal mg = 
-            { username = "username" |> tryGetString mg
-              payload  = "payload" |> tryGetString mg |> parseMetaGlobalPayload
-              id       = "id" |> tryGetString mg
-              modified = "modified" |> tryGetString mg |> (float) }
-        try 
-            fetchMetaGlobal secrets.username secrets.password
-            |> JsonValue.Parse
-            |> parseMetaGlobal
-            |> Some
-        with | _ -> None
+            try 
+                { username = "username" |> tryGetString mg
+                  payload  = "payload"  |> tryGetString mg |> parseMetaGlobalPayload |> Results.setOrFail
+                  id       = "id"       |> tryGetString mg
+                  modified = "modified" |> tryGetString mg |> (float) }
+                |> Success
+            with 
+            | ex -> ParseMetaGlobalError
+                    |> Results.setError (sprintf "Parse error on '/storage/meta/global' in '%s'" (mg.ToString())) ex 
+        fetchMetaGlobal secrets.username secrets.password
+        |> Results.setOrFail
+        |> JsonValue.Parse
+        |> parseMetaGlobal
+
 

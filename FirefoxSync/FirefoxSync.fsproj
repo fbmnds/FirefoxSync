@@ -48,8 +48,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FirefoxSync.fs" />
-    <Compile Include="SecretStore.fs" />
+    <Compile Include="Results.fs" />
     <Compile Include="Utilities.fs" />
+    <Compile Include="SecretStore.fs" />
     <Compile Include="ServerUrls.fs" />
     <Compile Include="CryptoKey.fs" />
     <Compile Include="GeneralInfo.fs" />

@@ -243,3 +243,39 @@ type MetaGlobal =
       payload  : MetaGlobalPayload
       id       : string       // "global"
       modified : float }
+
+
+// Error handling
+
+type ErrorLabel = ErrorLabel of string
+type Stacktrace = Stacktrace of string
+type Error = ErrorLabel * Stacktrace
+
+type FirefoxSyncMessage = 
+    // Http error messages
+    | InvalidUrl
+    | SendDataError of Error
+    | GetResponseError of Error
+    | InvalidCredentials
+    | HttpTimeOut
+    // Other error messages
+    | ReadSecretFileError of Error
+    | ReadFileError of Error
+    | WriteFileError of Error
+    | ClusterUrlError of Error
+    | EncryptedCollectionParseError of Error
+    | FirstCryptoKeyError of Error
+    | DecryptCryptoKeysError of Error
+    | GetCryptoKeysFromStringError of Error
+    | GetCryptoKeysError of Error
+    | GetCryptoKeysFromFileError of Error
+    | DecryptCollectionError of Error
+    | GetBookmarksError of Error
+    | ParseMetaGlobalPayloadError of Error
+    | ParseMetaGlobalError of Error
+    | Base32DecodeError of Error
+
+
+type Result<'TEntity> =
+    | Success of 'TEntity
+    | Failure of FirefoxSyncMessage list

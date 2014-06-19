@@ -1,7 +1,9 @@
-﻿module FirefoxSyncTest 
+﻿module FirefoxSyncTest
 
 open System
-open Xunit
+//open Xunit
+open NUnit.Framework
+open NUnit.Framework.Constraints
 open FsCheck
 open FsCheck.Xunit
 
@@ -26,8 +28,6 @@ let ``square should be positive`` (x:float) =
     not (Double.IsNaN(x)) ==> (x * x >= 0.)
 
 
-let s = SecretStore.secrets
-
 // base32Decode
 
 // https://docs.services.mozilla.com/sync/storageformat5.html
@@ -35,17 +35,19 @@ let s = SecretStore.secrets
 //"Y4NKPS6YXAVI75XNUVODSR472I" 
 // Python: \xc7\x1a\xa7\xcb\xd8\xb8\x2a\x8f\xf6\xed\xa5\x5c\x39\x47\x9f\xd2
 //
-[<Fact>]
-let ``base32Decode (mozilla docs example)`` () =
+[<Test>]
+let ``base32Decode (mozilla docs example)`` () : unit =
     let x =
         "Y4NKPS6YXAVI75XNUVODSR472I" 
         |> base32'8'9Decode 
+        |> Results.setOrFail
         |> bytesToHex 
     x = [|"c7"; "1a"; "a7"; "cb"; "d8"; "b8"; "2a"; "8f"; 
           "f6"; "ed"; "a5"; "5c"; "39"; "47"; "9f"; "d2"|]
     |> Assert.True
 
-// syncKeyBundle
+
+// buildSyncKeyBundle
 
 // https://docs.services.mozilla.com/sync/storageformat5.html
 // 
@@ -65,9 +67,12 @@ let ``base32Decode (mozilla docs example)`` () =
 //    hmac = HKDF-Expand(sync_key, encryption_key + info + "\x02", 32)
 //      -> 0xbf9e48ac50a2fcc400ae4d30a58dc6a83a7720c32f58c60fd9d02db16e406216
 //
-[<Fact>]
-let ``syncKeyBundle (mozilla docs example)`` () = 
-    let ff_skb' = syncKeyBundle "johndoe@example.com" ("Y4NKPS6YXAVI75XNUVODSR472I" |> base32'8'9Decode)
+[<Test>]
+let ``buildSyncKeyBundle (mozilla docs example)`` () : unit = 
+    let ff_skb' = "Y4NKPS6YXAVI75XNUVODSR472I" 
+                  |> base32'8'9Decode
+                  |> Results.setOrFail
+                  |> buildSyncKeyBundle "johndoe@example.com" 
     let ff_skb'' = ( ff_skb'.encryption_key |> Array.map (sprintf "%x"), 
                      ff_skb'.hmac_key |> Array.map (sprintf "%x"))
     let ff_skb''' = ([|"8d"; "7"; "65"; "43"; "e"; "a0"; "d9"; "db"; "d5"; "3c"; "53"; "6c";
@@ -81,19 +86,21 @@ let ``syncKeyBundle (mozilla docs example)`` () =
 
 // writeCryptoKeysToDisk
 
-[<Fact>]
-let ``writeCryptoKeysToDisk`` () = 
-    try
-        writeCryptoKeysToDisk s.username s.password None
-        true
-    with | _ -> false
+let s = SecretStore.setSecretByDefaultFile() |> Results.setOrFail
+
+[<Test>]
+let ``writeCryptoKeysToDisk`` () : unit = 
+    let x = writeCryptoKeysToDisk s.username s.password None
+    x
+    |> Results.setOrFail
+    |> fun _ -> true
     |> Assert.True
 
 
 // getRecordFields/getRecordField
 
-[<Fact>]
-let ``getRecordFields/getRecordField`` () = 
+[<Test>]
+let ``getRecordFields/getRecordField`` () : unit = 
     let x = {value = "value"; name = "name"; ``type`` = "type"; }
     let x' = getRecordFields x
     let x'' = { value = getRecordField x x'.[0]; 
@@ -104,48 +111,62 @@ let ``getRecordFields/getRecordField`` () =
 
 // GeneralInfo
 
-[<Fact>]
-let ``fetchInfoCollection/Quota`` () = 
-    try
-        let ic = fetchInfoCollections s.username s.password
-        let iq = fetchInfoQuota s.username s.password
-        let icu = fetchInfoCollectionUsage s.username s.password
-        let icc = fetchInfoCollectionCounts s.username s.password
-        true
-    with 
-    | _ -> false 
+[<Test>]
+let ``fetchInfoCollection/InfoQuota`` () : unit = 
+    [ fetchInfoCollections s.username s.password
+      fetchInfoQuota s.username s.password
+      fetchInfoCollectionUsage s.username s.password
+      fetchInfoCollectionCounts s.username s.password ]
+    |> List.map (fun x -> match x with | Success x' -> true | _ -> false)
+    |> List.reduce (fun x y -> x && y)  
     |> Assert.True
 
 
 // Collections
 
-let bm = getBookmarks s (getCryptokeysFromDisk s None)
-[<Fact>]
-let ``Collection Bookmark (retrieve bookmarks)`` () =
-    bm.Length > 600 
+let bm = 
+    try 
+        getCryptokeysFromFile s None 
+        |> Results.setOrFail
+        |> getBookmarks s
+    with 
+    | ex -> GetBookmarksError
+            |> Results.setError "Failed to retrieve bookmarks" ex
+
+[<Test>]
+let ``Collection Bookmark (retrieve bookmarks)`` () : unit =
+    bm
+    |> Results.setOrFail
+    |> fun x -> x.Length > 600 
     |> Assert.True
 
-[<Fact>]
-let ``Collection Bookmark (select children)`` () =
-    let bm' = bm |> Array.filter (fun x -> if x.children <> [||] then true else false)
+[<Test>]
+let ``Collection Bookmark (select children)`` () : unit =
+    let bm' = bm 
+              |> Results.setOrFail
+              |> Array.filter (fun x -> if x.children <> [||] then true else false)
     bm'.Length > 40 
     |> Assert.True
 
-[<Fact>]
-let ``Collection Bookmark (select by id)`` () =
-    let bm'' = bm |> Array.filter (fun x -> if x.id = (WeaveGUID) "dkqtmNFIvhbg" then true else false)
+[<Test>]
+let ``Collection Bookmark (select by id)`` () : unit =
+    let bm'' = bm 
+               |> Results.setOrFail
+               |> Array.filter (fun x -> if x.id = (WeaveGUID) "dkqtmNFIvhbg" then true else false)
     bm''.Length = 1
     |> Assert.True
 
-[<Fact>]
-let ``Collection Bookmark (select tags)`` () =
-    let bm''' = bm |> Array.filter (fun x -> if x.tags <> [||] then true else false)
+[<Test>]
+let ``Collection Bookmark (select tags)`` () : unit =
+    let bm''' = bm
+                |> Results.setOrFail 
+                |> Array.filter (fun x -> if x.tags <> [||] then true else false)
     bm'''.Length > 1
     |> Assert.True
 
-[<Fact>]
-let ``Collection MetaGlobal`` () =
+[<Test>]
+let ``Collection MetaGlobal`` () : unit =
     match (getMetaGlobal s) with
-    | Some x -> true
+    | Success x -> true
     | _ -> false
     |> Assert.True
