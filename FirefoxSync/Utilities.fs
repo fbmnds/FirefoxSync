@@ -203,45 +203,6 @@ module Utilities =
     
     // Net Utilities 
 
-    /// Return the server response as a string,
-    /// return an empty string in case of error, log error messages to the console.
-    let fetchUrlResponse' (url : string) requestMethod 
-                         (credentials: (string*string) option)
-                         (data : byte[] option) (contentType : string option) 
-                         timeout =    
-        try 
-            let req = WebRequest.Create(url)
-            match credentials with
-            | Some(username, password) -> req.Credentials <- new NetworkCredential(username,password)
-            | _ -> ignore credentials
-            req.Method <- requestMethod
-            match data, contentType with
-            | Some data, Some contentType -> req.ContentType <- contentType; req.ContentLength <- (int64) data.Length
-            | Some data, _ -> req.ContentLength <- (int64) data.Length
-            | _ -> ignore data
-            let sendData data = 
-                use wstream = req.GetRequestStream() 
-                wstream.Write(data , 0, (data.Length))
-                wstream.Flush()
-                wstream.Close()
-            match data with
-            | Some data -> data |> sendData
-            | _ -> ignore data
-            match timeout with
-            | Some timeout -> req.Timeout <- timeout
-            | _ -> req.Timeout <- 3 * 60 * 1000
-            use resp = req.GetResponse()
-            use strm = resp.GetResponseStream()
-            let text = (new StreamReader(strm)).ReadToEnd()
-            text
-        with 
-        // http://stackoverflow.com/questions/7261986/c-sharp-how-to-get-error-information-when-httpwebrequest-getresponse-fails
-        | :? WebException as ex -> use stream = ex.Response.GetResponseStream()
-                                   use  reader = new StreamReader(stream)
-                                   Console.WriteLine(reader.ReadToEnd()); "" 
-        | _ as ex -> printfn "%s" (ex.ToString()); ""
-
-
     /// Return the server response as a Result<string>
     let fetchUrlResponse requestMethod 
                          (credentials: (string*string) option)

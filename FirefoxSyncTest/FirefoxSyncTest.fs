@@ -1,7 +1,7 @@
 ﻿module FirefoxSyncTest
 
 open System
-//open Xunit
+open Xunit
 open NUnit.Framework
 open NUnit.Framework.Constraints
 open FsCheck
@@ -13,6 +13,9 @@ open FirefoxSync.CryptoKey
 open FirefoxSync.GeneralInfo
 open FirefoxSync.Collections
 
+(*-----------------------------------------------------------------------------
+   xUnit Tests
+-----------------------------------------------------------------------------*)
 
 // https://github.com/fsharp/FsCheck/blob/master/Docs/Documentation.md
 // https://github.com/fsharp/FsUnit
@@ -27,6 +30,9 @@ let ``square should be positive failing`` (x:float) =
 let ``square should be positive`` (x:float) =
     not (Double.IsNaN(x)) ==> (x * x >= 0.)
 
+(*-----------------------------------------------------------------------------
+   NUnit Tests
+-----------------------------------------------------------------------------*)
 
 // base32Decode
 

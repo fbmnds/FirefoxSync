@@ -2,9 +2,6 @@
 open System
 open System.Reflection
 
-#r @".\bin\Debug\FirefoxSyncTest.dll"
-open FirefoxSyncTest
-
 #I @"..\packages\NUnit.2.6.3\lib"
 #r "nunit.framework.dll"
 open NUnit
@@ -14,35 +11,17 @@ open NUnit.Framework
 #r "nunit.core.interfaces.dll"
 open NUnit.Core
 
-//#I @"..\packages\xunit.1.9.2\lib\net20\"
-//#r "xunit.dll"
-//open Xunit
-
 #I @"..\packages\FsCheck.0.9.4.0\lib\net40-Client\"
 #r "FsCheck.dll"
 open FsCheck
 
-#I @"..\packages\FsCheck.Xunit.0.4.1.0\lib\net40-Client\"
-#r "FsCheck.Xunit.dll"
-open FsCheck.Xunit
+//#I @"..\packages\FsCheck.Xunit.0.4.1.0\lib\net40-Client\"
+//#r "FsCheck.Xunit.dll"
+//open FsCheck.Xunit
 
 
-//// ... this is for xUnit
-//
-////https://github.com/fsharp/FsCheck/blob/master/docs/Documentation.md#implementing-irunner-to-integrate-fscheck-with-mbxncsunit
-//
-//let xUnitRunner =
-//    { new IRunner with
-//        member x.OnStartFixture t = ()
-//        member x.OnArguments (ntest,args, every) = ()
-//        member x.OnShrink(args, everyShrink) = ()
-//        member x.OnFinished(name,testResult) = 
-//            match testResult with 
-//            | TestResult.True _ -> Assert.True(true)
-//            | _ -> Assert.True(false, Runner.onFinishedToString name testResult) 
-//    }
-//
-//let withxUnitConfig = { Config.Default with Runner = xUnitRunner }
+#r @".\bin\Debug\FirefoxSyncTest.dll"
+open FirefoxSyncTest
 
 
 // NUnit Runner 
@@ -51,7 +30,7 @@ open FsCheck.Xunit
 
 let binDebugDir = Environment.GetEnvironmentVariable("PROJECTS") + @"\FirefoxSync\FirefoxSyncTest\bin\Debug\"
 
-type ScriptTestResult = | TestResult of NUnit.Core.TestResult | String of string
+type TestResultOrString = | TestResult of NUnit.Core.TestResult | String of string
 
 /// Run tests;
 /// print the program's System.Console output
@@ -68,10 +47,12 @@ let simpleTestRunner () =
 
 let testResult = simpleTestRunner ()
 
+
+
 /// Run tests;
 /// swallow the program's System.Console output; 
 /// otherwise apparently equivalent NUnit.Core.TestResult as 'simpleTestRunner'
-let remoteTestRunner () : ScriptTestResult = 
+let remoteTestRunner () = 
     try 
         // CoreExtensions.Host.InitializeService() 
         let package = new TestPackage( binDebugDir + "FirefoxSyncTest.dll" )

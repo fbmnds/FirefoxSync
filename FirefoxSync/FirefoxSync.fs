@@ -5,9 +5,6 @@
 
 // TODO
 // ----
-// railway oriented programming, consistent error/exception handling
-// better types (e.g. GUID, URL), http://fsharpforfunandprofit.com/posts/designing-with-types-single-case-dus/
-// proper testing
 // complete functionality
 // async http
 // parallel tasks
