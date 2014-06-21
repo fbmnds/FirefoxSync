@@ -92,7 +92,13 @@ let ``buildSyncKeyBundle (mozilla docs example)`` () : unit =
 
 // writeCryptoKeysToDisk
 
-let s = SecretStore.setSecretByDefaultFile() |> Results.setOrFail
+let s' = SecretStore.setSecretByDefaultFile()
+
+[<Test>]
+let ``setSecretByDefaultFile`` () : unit =
+    Assert.DoesNotThrow( fun x -> s' |> Results.setOrFail |> ignore )
+
+let s = s' |> Results.setOrFail
 
 [<Test>]
 let ``writeCryptoKeysToDisk`` () : unit = 

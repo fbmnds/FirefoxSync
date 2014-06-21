@@ -15,10 +15,6 @@ open NUnit.Core
 #r "FsCheck.dll"
 open FsCheck
 
-//#I @"..\packages\FsCheck.Xunit.0.4.1.0\lib\net40-Client\"
-//#r "FsCheck.Xunit.dll"
-//open FsCheck.Xunit
-
 
 #r @".\bin\Debug\FirefoxSyncTest.dll"
 open FirefoxSyncTest
@@ -32,6 +28,20 @@ let binDebugDir = Environment.GetEnvironmentVariable("PROJECTS") + @"\FirefoxSyn
 
 type TestResultOrString = | TestResult of NUnit.Core.TestResult | String of string
 
+// http://stackoverflow.com/questions/14340934/nunit-accessing-the-failure-message-in-teardown
+// Handle the NUnit test events 
+type EventListener() = 
+    interface NUnit.Core.EventListener with
+        member this.RunStarted (x,y) = printfn "%s %d" x y
+        member this.RunFinished (x : NUnit.Core.TestResult) = printfn "%A" x.Results
+        member this.RunFinished (x : Exception) = printfn "%s" x.Message
+        member this.TestStarted x = printfn "%s" x.Name
+        member this.TestFinished x = printfn "%A" x.ResultState
+        member this.SuiteStarted x = printfn "%s" x.Name
+        member this.SuiteFinished x = printfn "%A" x.ResultState
+        member this.UnhandledException x = printfn "%s" x.Message
+        member this.TestOutput x = printfn "%s" x.Text        
+
 /// Run tests;
 /// print the program's System.Console output
 let simpleTestRunner () = 
@@ -41,25 +51,25 @@ let simpleTestRunner () =
         let package = new TestPackage ( binDebugDir + "FirefoxSyncTest.dll" )
         let loc = binDebugDir + "FirefoxSyncTest.dll" // Assembly.GetExecutingAssembly().Location
         runner.Load(package) |> ignore
-        runner.Run( NullListener(), NUnit.Core.TestFilter.Empty, false, LoggingThreshold() )
-        |> (TestResult)
+        runner.Run( EventListener(), NUnit.Core.TestFilter.Empty, false, LoggingThreshold() )
+        |> (TestResultOrString.TestResult)
     with | ex -> String ex.Message
 
 let testResult = simpleTestRunner ()
 
 
-
 /// Run tests;
-/// swallow the program's System.Console output; 
-/// otherwise apparently equivalent NUnit.Core.TestResult as 'simpleTestRunner'
+/// (swallows the program's System.Console output; 
+/// does not work with EventListener).
 let remoteTestRunner () = 
     try 
-        // CoreExtensions.Host.InitializeService() 
+        //CoreExtensions.Host.InitializeService() 
         let package = new TestPackage( binDebugDir + "FirefoxSyncTest.dll" )
         let remoteTestRunner = new RemoteTestRunner()
         remoteTestRunner.Load(package) |> ignore
-        TestResult ( remoteTestRunner.Run( NullListener(), NUnit.Core.TestFilter.Empty, false, LoggingThreshold() ) )
+        remoteTestRunner.Run( NullListener(), NUnit.Core.TestFilter.Empty, false, LoggingThreshold() )
+        |> (TestResultOrString.TestResult)
     with | ex -> String(ex.Message )
 
-//let testResult' = remoteTestRunner ()
+let testResult' = remoteTestRunner ()
 
