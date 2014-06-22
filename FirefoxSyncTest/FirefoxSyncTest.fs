@@ -12,10 +12,22 @@ open FirefoxSync.Utilities
 open FirefoxSync.CryptoKey
 open FirefoxSync.GeneralInfo
 open FirefoxSync.Collections
+open FirefoxSync.SecretStore
 
-(*-----------------------------------------------------------------------------
-   xUnit Tests
------------------------------------------------------------------------------*)
+open SemanticLogging
+open System.Diagnostics.Tracing
+
+let eventSource = getEventSource ()
+let log = eventSource |> getLogMessage1
+let debugListener = @"E:\PerfLogs\FirefoxSynTestDebugLog.txt" |> getFileDebugListener
+
+debugListener.EnableEvents(eventSource, 
+                           EventLevel.Verbose, 
+                           SemanticLoggingEventSource.FirefoxSyncTestEventSource.Keywords.Debug)
+
+(*----------------------------------------------------------------------------*)
+(*   xUnit Tests                                                              *)
+(*----------------------------------------------------------------------------*)
 
 // https://github.com/fsharp/FsCheck/blob/master/Docs/Documentation.md
 // https://github.com/fsharp/FsUnit
@@ -30,9 +42,9 @@ let ``square should be positive failing`` (x:float) =
 let ``square should be positive`` (x:float) =
     not (Double.IsNaN(x)) ==> (x * x >= 0.)
 
-(*-----------------------------------------------------------------------------
-   NUnit Tests
------------------------------------------------------------------------------*)
+(*----------------------------------------------------------------------------*)
+(*   NUnit Tests                                                              *)
+(*----------------------------------------------------------------------------*)
 
 // base32Decode
 
@@ -90,7 +102,8 @@ let ``buildSyncKeyBundle (mozilla docs example)`` () : unit =
     ff_skb'' = ff_skb'''
     |> Assert.True
 
-// writeCryptoKeysToDisk
+
+// setSecretByDefaultFile
 
 let s' = SecretStore.setSecretByDefaultFile()
 
@@ -100,10 +113,12 @@ let ``setSecretByDefaultFile`` () : unit =
 
 let s = s' |> Results.setOrFail
 
+
+// writeCryptoKeysToDisk
+
 [<Test>]
 let ``writeCryptoKeysToDisk`` () : unit = 
-    let x = writeCryptoKeysToDisk s.username s.password None
-    x
+    writeCryptoKeysToDisk s.username s.password None
     |> Results.setOrFail
     |> fun _ -> true
     |> Assert.True
@@ -121,6 +136,7 @@ let ``getRecordFields/getRecordField`` () : unit =
     x = x''
     |> Assert.True
 
+
 // GeneralInfo
 
 [<Test>]
@@ -129,7 +145,9 @@ let ``fetchInfoCollection/InfoQuota`` () : unit =
       fetchInfoQuota s.username s.password
       fetchInfoCollectionUsage s.username s.password
       fetchInfoCollectionCounts s.username s.password ]
-    |> List.map (fun x -> match x with | Success x' -> printfn "%A" x'; true | _ -> false)
+    |> List.map (fun x -> match x with 
+                          | Success x' -> log x'; true 
+                          | _ -> false)
     |> List.reduce (fun x y -> x && y)  
     |> Assert.True
 
@@ -147,7 +165,7 @@ let bm =
 
 [<Test>]
 let ``Collection Bookmark (retrieve bookmarks)`` () : unit =
-    printfn "%A"  bm
+    log  (bm.ToString())
     bm
     |> Results.setOrFail
     |> fun x -> x.Length > 600 
@@ -158,7 +176,7 @@ let ``Collection Bookmark (select children)`` () : unit =
     let bm' = bm 
               |> Results.setOrFail
               |> Array.filter (fun x -> if x.children <> [||] then true else false)
-    printfn "%A"  bm'
+    log  (bm'.ToString())
     bm'.Length > 40 
     |> Assert.True
 
@@ -167,7 +185,7 @@ let ``Collection Bookmark (select by id)`` () : unit =
     let bm'' = bm 
                |> Results.setOrFail
                |> Array.filter (fun x -> if x.id = (WeaveGUID) "dkqtmNFIvhbg" then true else false)
-    printfn "%A"  bm''
+    log  (bm''.ToString())
     bm''.Length = 1
     |> Assert.True
 
@@ -176,13 +194,18 @@ let ``Collection Bookmark (select tags)`` () : unit =
     let bm''' = bm
                 |> Results.setOrFail 
                 |> Array.filter (fun x -> if x.tags <> [||] then true else false)
-    printfn "%A"  bm'''
+    log  (bm'''.ToString())
     bm'''.Length > 1
     |> Assert.True
 
 [<Test>]
 let ``Collection MetaGlobal`` () : unit =
     match (getMetaGlobal s) with
-    | Success x -> printfn "%A" x; true
+    | Success x -> log (x.ToString()); true
     | _ -> false
     |> Assert.True
+
+
+debugListener.DisableEvents(eventSource)
+debugListener.Dispose()
+

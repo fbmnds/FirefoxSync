@@ -12,6 +12,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{4BF434
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SemanticLogging", "SemanticLogging\SemanticLogging.fsproj", "{E8FAB79E-8E9A-4A86-AFC2-5FC06BD01F4E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticLoggingEventSource", "SemanticLogging.Keywords\SemanticLoggingEventSource.csproj", "{51643FF9-63A6-435C-BCA8-1729DD5C7109}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +30,14 @@ Global
 		{4672E296-BFE7-40B4-A123-392085D33890}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4672E296-BFE7-40B4-A123-392085D33890}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4672E296-BFE7-40B4-A123-392085D33890}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8FAB79E-8E9A-4A86-AFC2-5FC06BD01F4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8FAB79E-8E9A-4A86-AFC2-5FC06BD01F4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8FAB79E-8E9A-4A86-AFC2-5FC06BD01F4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8FAB79E-8E9A-4A86-AFC2-5FC06BD01F4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51643FF9-63A6-435C-BCA8-1729DD5C7109}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51643FF9-63A6-435C-BCA8-1729DD5C7109}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51643FF9-63A6-435C-BCA8-1729DD5C7109}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51643FF9-63A6-435C-BCA8-1729DD5C7109}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

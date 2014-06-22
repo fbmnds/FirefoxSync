@@ -109,6 +109,16 @@
       <Project>{61a72d0a-ff89-4c25-a1f9-f3de7bab0c2b}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\SemanticLogging.Keywords\SemanticLoggingEventSource.csproj">
+      <Name>SemanticLoggingEventSource</Name>
+      <Project>{51643ff9-63a6-435c-bca8-1729dd5c7109}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\SemanticLogging\SemanticLogging.fsproj">
+      <Name>SemanticLogging</Name>
+      <Project>{e8fab79e-8e9a-4a86-afc2-5fc06bd01f4e}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '11.0'">
