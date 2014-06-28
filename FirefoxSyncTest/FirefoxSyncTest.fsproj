@@ -65,13 +65,11 @@
       <HintPath>..\packages\FsCheck.Xunit.0.4.1.0\lib\net40-Client\FsCheck.Xunit.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Diagnostics.Tracing.EventSource">
-      <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.0.24\lib\net40\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Diagnostics.Tracing.EventSource">
+      <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.0.24\lib\net40\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
     </Reference>
     <Reference Include="nunit.core">
       <HintPath>..\packages\NUnitTestAdapter.1.0\lib\nunit.core.dll</HintPath>
@@ -116,9 +114,9 @@
       <Project>{61a72d0a-ff89-4c25-a1f9-f3de7bab0c2b}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\SemanticLogging\SemanticLogging.fsproj">
+    <ProjectReference Include="..\SemanticLogging\SemanticLogging.csproj">
       <Name>SemanticLogging</Name>
-      <Project>{f4dd70df-27fb-48df-8ee0-a2525a85febf}</Project>
+      <Project>{47e1fb8e-715c-4dce-9342-9aec24dbeb28}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

@@ -5,14 +5,15 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>f4dd70df-27fb-48df-8ee0-a2525a85febf</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>SemanticLogging</RootNamespace>
-    <AssemblyName>SemanticLogging</AssemblyName>
+    <ProjectGuid>ceeca971-54df-4666-974b-a2daa9113464</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>SemanticLoggingRegister</RootNamespace>
+    <AssemblyName>SemanticLoggingRegister</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
-    <Name>SemanticLogging</Name>
-    <NuGetPackageImportStamp>7de6b93a</NuGetPackageImportStamp>
+    <Name>SemanticLoggingRegister</Name>
+    <NuGetPackageImportStamp>cc15fe5e</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +23,9 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\SemanticLogging.XML</DocumentationFile>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>bin\Debug\SemanticLoggingRegister.XML</DocumentationFile>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,31 +34,33 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Release\SemanticLogging.XML</DocumentationFile>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>bin\Release\SemanticLoggingRegister.XML</DocumentationFile>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.Diagnostics.Tracing.EventSource">
       <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.0.24\lib\net40\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SemanticLogging.fs" />
-    <None Include="Script.fsx" />
-    <None Include="_EventRegisterUsersGuide.docx" />
+    <Compile Include="Program.fs" />
+    <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="_EventRegisterUsersGuide.docx" />
     <None Include="_EventSourceUsersGuide.docx" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SemanticLoggingKeywords\SemanticLoggingKeywords.csproj">
-      <Name>SemanticLoggingKeywords</Name>
+    <ProjectReference Include="..\SemanticLogging\SemanticLogging.csproj">
+      <Name>SemanticLogging</Name>
       <Project>{47e1fb8e-715c-4dce-9342-9aec24dbeb28}</Project>
       <Private>True</Private>
     </ProjectReference>

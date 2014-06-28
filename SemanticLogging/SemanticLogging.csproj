@@ -7,8 +7,8 @@
     <ProjectGuid>{47E1FB8E-715C-4DCE-9342-9AEC24DBEB28}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SemanticLoggingKeywords</RootNamespace>
-    <AssemblyName>SemanticLoggingKeywords</AssemblyName>
+    <RootNamespace>SemanticLogging</RootNamespace>
+    <AssemblyName>SemanticLogging</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>bce25f87</NuGetPackageImportStamp>
@@ -26,7 +26,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -43,7 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Keywords.cs" />
+    <Compile Include="SemanticLogging.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

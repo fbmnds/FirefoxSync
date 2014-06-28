@@ -60,6 +60,13 @@
     <None Include="app.config" />
     <None Include="_EventRegisterUsersGuide.docx" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SemanticLogging\SemanticLogging.csproj">
+      <Name>SemanticLogging</Name>
+      <Project>{47e1fb8e-715c-4dce-9342-9aec24dbeb28}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
   </PropertyGroup>

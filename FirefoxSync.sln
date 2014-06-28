@@ -12,9 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{4BF434
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SemanticLogging", "SemanticLogging\SemanticLogging.fsproj", "{F4DD70DF-27FB-48DF-8EE0-A2525A85FEBF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticLogging", "SemanticLogging\SemanticLogging.csproj", "{47E1FB8E-715C-4DCE-9342-9AEC24DBEB28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticLoggingKeywords", "SemanticLoggingKeywords\SemanticLoggingKeywords.csproj", "{47E1FB8E-715C-4DCE-9342-9AEC24DBEB28}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SemanticLoggingRegister", "SemanticLoggingRegister\SemanticLoggingRegister.fsproj", "{CEECA971-54DF-4666-974B-A2DAA9113464}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,14 +30,14 @@ Global
 		{4672E296-BFE7-40B4-A123-392085D33890}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4672E296-BFE7-40B4-A123-392085D33890}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4672E296-BFE7-40B4-A123-392085D33890}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F4DD70DF-27FB-48DF-8EE0-A2525A85FEBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4DD70DF-27FB-48DF-8EE0-A2525A85FEBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F4DD70DF-27FB-48DF-8EE0-A2525A85FEBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F4DD70DF-27FB-48DF-8EE0-A2525A85FEBF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{47E1FB8E-715C-4DCE-9342-9AEC24DBEB28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{47E1FB8E-715C-4DCE-9342-9AEC24DBEB28}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47E1FB8E-715C-4DCE-9342-9AEC24DBEB28}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47E1FB8E-715C-4DCE-9342-9AEC24DBEB28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEECA971-54DF-4666-974B-A2DAA9113464}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEECA971-54DF-4666-974B-A2DAA9113464}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEECA971-54DF-4666-974B-A2DAA9113464}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEECA971-54DF-4666-974B-A2DAA9113464}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
