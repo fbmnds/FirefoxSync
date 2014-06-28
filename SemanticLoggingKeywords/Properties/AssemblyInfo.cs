@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Allgemeine Informationen über eine Assembly werden über die folgenden 
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die mit einer Assembly verknüpft sind.
-[assembly: AssemblyTitle("SemanticLogging.Keywords")]
+[assembly: AssemblyTitle("SemanticLoggingKeywords")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("SemanticLogging.Keywords")]
+[assembly: AssemblyProduct("SemanticLoggingKeywords")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Die folgende GUID bestimmt die ID der Typbibliothek, wenn dieses Projekt für COM verfügbar gemacht wird
-[assembly: Guid("9e7052b5-4f86-4b96-b23a-3fef5a792f98")]
+[assembly: Guid("8e1df315-c1d9-4fd8-93de-1ff59c8849f8")]
 
 // Versionsinformationen für eine Assembly bestehen aus den folgenden vier Werten:
 //

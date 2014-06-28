@@ -15,15 +15,17 @@ open FirefoxSync.Collections
 open FirefoxSync.SecretStore
 
 open SemanticLogging
-open System.Diagnostics.Tracing
+//open System.Diagnostics.Tracing
 
-let eventSource = getEventSource ()
-let log = eventSource |> getLogMessage1
-let debugListener = @"E:\PerfLogs\FirefoxSynTestDebugLog.txt" |> getFileDebugListener
+//let eventSource = getEventSource ()
+//let log = eventSource |> getLogMessage1
+//let debugListener = @"E:\PerfLogs\FirefoxSynTestDebugLog.txt" |> getFileDebugListener
+//
+//debugListener.EnableEvents(eventSource, 
+//                           EventLevel.Verbose, 
+//                           SemanticLoggingEventSource.FirefoxSyncTestEventSource.Keywords.Debug)
 
-debugListener.EnableEvents(eventSource, 
-                           EventLevel.Verbose, 
-                           SemanticLoggingEventSource.FirefoxSyncTestEventSource.Keywords.Debug)
+let log = FirefoxSyncEventSource.Log.Debug
 
 (*----------------------------------------------------------------------------*)
 (*   xUnit Tests                                                              *)
@@ -206,6 +208,6 @@ let ``Collection MetaGlobal`` () : unit =
     |> Assert.True
 
 
-debugListener.DisableEvents(eventSource)
-debugListener.Dispose()
+//debugListener.DisableEvents(eventSource)
+//debugListener.Dispose()
 
