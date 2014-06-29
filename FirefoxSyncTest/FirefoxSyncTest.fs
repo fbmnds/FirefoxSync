@@ -24,8 +24,6 @@ let log = setLog (new ConsoleLogger())
 let log = setLog (new PseudoLogger())
 #endif
 
-let cl = new ConsoleLogger() :> ILogger
-cl.Log "%s" [(LogMessageBaseType.String) "test"]
 
 (*----------------------------------------------------------------------------*)
 (*   xUnit Tests                                                              *)
