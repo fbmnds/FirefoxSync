@@ -1,3 +1,4 @@
 FirefoxSync
 ===========
-(c) @fbmnds under Apache 2.0.
+
+© @fbmnds, Apache 2.0. where applicable.

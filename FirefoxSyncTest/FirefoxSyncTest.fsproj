@@ -114,11 +114,6 @@
       <Project>{61a72d0a-ff89-4c25-a1f9-f3de7bab0c2b}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\SemanticLogging\SemanticLogging.csproj">
-      <Name>SemanticLogging</Name>
-      <Project>{47e1fb8e-715c-4dce-9342-9aec24dbeb28}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '11.0'">

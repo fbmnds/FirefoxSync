@@ -36,6 +36,9 @@ type URI = URI of string
 // "The Firefox client uses 12 randomly generated base64url characters, much like for WBO IDs."
 type WeaveGUID = WeaveGUID of string 
 
+// GUID according to RFC4122
+type GUID = GUID of string 
+
 type Addons = 
     { addonID       : string
       applicationID : string
@@ -276,3 +279,21 @@ type FirefoxSyncMessage =
 type Result<'TEntity> =
     | Success of 'TEntity
     | Failure of FirefoxSyncMessage list
+
+
+// Logging Interface
+
+type LogMessageBaseType =
+    | String of string
+    | Integer of int
+    | Integer64 of int64
+    | Float of float
+
+
+type LogMessage = seq<LogMessageBaseType>
+
+type ILogger =
+    inherit System.IDisposable
+    abstract member Log: string -> LogMessage -> unit
+    
+    

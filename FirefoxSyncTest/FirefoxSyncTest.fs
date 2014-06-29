@@ -14,9 +14,18 @@ open FirefoxSync.GeneralInfo
 open FirefoxSync.Collections
 open FirefoxSync.SecretStore
 
-open SemanticLogging
+let setLog (logger : ILogger) = 
+    let log (x: string) = logger.Log "%s" [(LogMessageBaseType.String) x]
+    log
 
-let log = FirefoxSyncEventSource.Log.DebugTrace
+#if DEBUG
+let log = setLog (new ConsoleLogger())
+#else
+let log = setLog (new PseudoLogger())
+#endif
+
+let cl = new ConsoleLogger() :> ILogger
+cl.Log "%s" [(LogMessageBaseType.String) "test"]
 
 (*----------------------------------------------------------------------------*)
 (*   xUnit Tests                                                              *)
