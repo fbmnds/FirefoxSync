@@ -129,3 +129,57 @@ module Collections =
             |> Success
         with 
         | ex -> Results.setError "" ex GetBookmarksError
+
+    
+    let bookmarkToJson (bm: Bookmarks) =
+        JsonValue.Record(
+            [|("id",            JsonValue.String((string) bm.id)); 
+              ("type",          JsonValue.String(bm.``type``)) 
+              ("title",         JsonValue.String(bm.title)) 
+              ("parentName",    JsonValue.String(bm.parentName))
+              ("bmkUri",        JsonValue.String((string) bm.bmkUri))
+              ("tags",          JsonValue.Array(bm.tags |> Array.map JsonValue.String))
+              ("keyword",       JsonValue.String(bm.keyword))
+              ("description",   JsonValue.String(bm.description))
+              ("loadInSidebar", JsonValue.Boolean(bm.loadInSidebar))
+              ("parentid",      JsonValue.String((string) bm.parentid))
+              ("children",      JsonValue.Array(bm.children 
+                                                |> Array.map (string) 
+                                                |> Array.map JsonValue.String))|])
+
+
+    let bookmarkSeqToJson (bms: Bookmarks seq) =
+        [| for bm in bms do yield bookmarkToJson bm |]   
+        |> JsonValue.Array
+
+
+    let bookmarkToString (bm: Bookmarks) =
+        let str'  (WeaveGUID x) = x
+        let str'' (URI x)       = x
+        let arrayToString x = 
+            x
+            |> (String.concat "\",\"")
+            |> sprintf "[\"%s\"]"
+        let arrayToString' x = 
+            x
+            |> Seq.map str'
+            |> arrayToString
+        let boolToString x = if x then "true" else "false"
+        [ "{ \"id\"            : \"" ; (str' bm.id)            ; "\",\n" ;
+          "  \"type\"          : \"" ; bm.``type``             ; "\",\n" ;
+          "  \"title\"         : \"" ; bm.title                ; "\",\n" ;
+          "  \"parentName\"    : \"" ; bm.parentName           ; "\",\n" ;
+          "  \"bmkUri\"        : \"" ; (str'' bm.bmkUri)       ; "\",\n" ;
+          "  \"tags\"          : "   ; (arrayToString bm.tags) ; ",\n"   ;
+          "  \"keyword\"       : \"" ; bm.keyword              ; "\",\n" ;
+          "  \"description\"   : \"" ; bm.description          ; "\",\n" ;
+          "  \"loadInSidebar\" : "   ; ((boolToString) bm.loadInSidebar)  ; ",\n" ;
+          "  \"parentid\"      : \"" ; (str' bm.parentid)      ; "\",\n" ;
+          "  \"children\"      : "   ; (arrayToString' bm.children) ; " }" ]
+        |> (String.concat "")
+
+
+    let bookmarkSeqToString name (bms: Bookmarks seq) =
+        [| for bm in bms do yield bookmarkToString bm |]   
+        |> String.concat ",\n"
+        |> sprintf "{ \"%s\" : [%s] }" name

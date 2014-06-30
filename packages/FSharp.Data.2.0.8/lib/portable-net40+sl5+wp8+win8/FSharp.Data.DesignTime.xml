@@ -1213,9 +1213,7 @@
 </summary>
 </member>
 <member name="">
-
-</member>
-<member name="M:FSharp.Data.Runtime.CsvFile`1.Create(System.Func{System.Object,System.String[],`0},System.Func{`0,System.String[]},System.IO.TextReader,System.String,System.Char,System.Boolean,System.Boolean,System.Boolean)">
+tringArrayToRow	cacheRows€ÑM:FSharp.Data.Runtime.CsvFile`1.Create(System.Func{System.Object,System.String[],`0},System.Func{`0,System.String[]},System.IO.TextReader,System.String,System.Char,System.Boolean,System.Boolean,System.Boolean)">
 <summary>
  [omit]
 </summary>

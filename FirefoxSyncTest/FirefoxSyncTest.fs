@@ -13,6 +13,7 @@ open FirefoxSync.CryptoKey
 open FirefoxSync.GeneralInfo
 open FirefoxSync.Collections
 open FirefoxSync.SecretStore
+open FirefoxSync.InternetExplorer
 
 let setLog (logger : ILogger) = 
     let log (x: string) = logger.Log "%s" [(LogMessageBaseType.String) x]
@@ -204,3 +205,30 @@ let ``Collection MetaGlobal`` () : unit =
     | Success x -> log (x.ToString()); true
     | _ -> false
     |> Assert.True
+
+[<Test>]
+let ``Get folders and links`` () : unit =
+    let bm' = bm |> Results.setOrFail
+    bm'
+    |> getFoldersAndLinks
+    |> fun (x,y) -> bm'.Length = x.Length + y.Length && x.Length > 0 && y.Length > 0
+    |> Assert.True
+
+
+[<Test>]
+let ``Write bookmarks to disk`` () : unit =
+    let file = Environment.GetEnvironmentVariable("HOME") + @"\Desktop\bookmarks.txt"
+    bm 
+    |> Results.setOrFail
+    |> fun bm' -> (bm',(bm' |> getFoldersAndLinks))
+    |> fun (x,(y,z)) -> (x |> bookmarkSeqToString "bm", 
+                         y |> bookmarkSeqToString "folders",
+                         z |> bookmarkSeqToString "links")
+    |> fun (x,y,z) -> [ writeStringToFile x    false file 
+                        writeStringToFile "\n" true  file
+                        writeStringToFile y    true  file
+                        writeStringToFile "\n" true  file
+                        writeStringToFile z    true  file ]
+    |> List.map Results.setOrFail
+    |> fun x -> true
+    |> Assert.IsTrue

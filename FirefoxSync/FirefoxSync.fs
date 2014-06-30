@@ -43,15 +43,15 @@ type Addons =
     { addonID       : string
       applicationID : string
       enabled       : Boolean
-      source      : string }
+      source        : string }
 
 type Bookmarks = 
-    { id          : WeaveGUID
+    { id            : WeaveGUID
       ``type``      : string
-      title       : string
+      title         : string
       parentName    : string
-      bmkUri      : URI
-      tags        : string []
+      bmkUri        : URI
+      tags          : string []
       keyword       : string
       description   : string
       loadInSidebar : Boolean      
@@ -61,11 +61,11 @@ type Bookmarks =
 type Microsummary = 
     { generatorUri  : string
       staticTitle   : string
-      title       : string
-      bmkUri      : string
+      title         : string
+      bmkUri        : string
       description   : string
       loadInSidebar : Boolean
-      tags        : string []
+      tags          : string []
       keyword       : string
       parentid      : string
       parentName    : string
@@ -75,11 +75,11 @@ type Microsummary =
 type Query = 
     { folderName    : string
       queryId       : string
-      title       : string
-      bmkUri      : string
+      title         : string
+      bmkUri        : string
       description   : string
       loadInSidebar : Boolean
-      tags        : string []
+      tags          : string []
       keyword       : string
       parentid      : string
       parentName    : string
@@ -87,7 +87,7 @@ type Query =
       ``type``      : string }
 
 type Folder = 
-    { title       : string
+    { title         : string
       parentid      : string
       parentName    : string
       predecessorid : string
@@ -96,14 +96,14 @@ type Folder =
 type Livemark = 
     { siteUri       : string
       feedUri       : string
-      title       : string
+      title         : string
       parentid      : string
       parentName    : string
       predecessorid : string
       ``type``      : string }
 
 type Separator = 
-    { pos         : string
+    { pos           : string
       parentid      : string
       parentName    : string
       predecessorid : string
@@ -118,7 +118,7 @@ type Clients =
       protocols : string [] }
 
 type ClientsPayload = 
-    { name       : string
+    { name         : string
       formfactor   : string
       application  : string
       version      : string
@@ -137,14 +137,14 @@ type Forms =
       value : string }
 
 type HistoryTransition = 
-| TRANSITION_LINK  = 1
-| TRANSITION_TYPED = 2
-| TRANSITION_BOOKMARK = 3
-| TRANSITION_EMBED = 4
+| TRANSITION_LINK               = 1
+| TRANSITION_TYPED              = 2
+| TRANSITION_BOOKMARK           = 3
+| TRANSITION_EMBED              = 4
 | TRANSITION_REDIRECT_PERMANENT = 5
 | TRANSITION_REDIRECT_TEMPORARY = 6
-| TRANSITION_DOWNLOAD = 7
-| TRANSITION_FRAMED_LINK = 8
+| TRANSITION_DOWNLOAD           = 7
+| TRANSITION_FRAMED_LINK        = 8
 
 type HistoryPayloadVisits = 
     { uri    : string
@@ -204,9 +204,9 @@ type Tabs =
 // Firefox Sync Secrets
 
 type Secret = 
-    { email            : string
-      username           : string
-      password           : string
+    { email                : string
+      username             : string
+      password             : string
       encryptionpassphrase : string }
 
 
@@ -217,7 +217,7 @@ type SyncKeyBundle =
       hmac_key       : byte[] }
 
 type EncryptedCollection = 
-    { iv       : string
+    { iv         : string
       ciphertext : string
       hmac       : string }
 
@@ -233,9 +233,9 @@ type MetaGlobalVersionInfo =
 type Engine = Engine of string
 
 type MetaGlobalPayload = 
-    { syncID       : WeaveGUID
+    { syncID         : WeaveGUID
       storageVersion : int      
-      engines      : Map<Engine,MetaGlobalVersionInfo>
+      engines        : Map<Engine,MetaGlobalVersionInfo>
       declined       : Engine [] }
 
 type MetaGlobal =
@@ -274,6 +274,7 @@ type FirefoxSyncMessage =
     | ParseMetaGlobalPayloadError of Error
     | ParseMetaGlobalError of Error
     | Base32DecodeError of Error
+    | CyclicBookmarkFolders of Error
 
 
 type Result<'TEntity> =

@@ -38,7 +38,8 @@ module Results =
         | ParseMetaGlobalPayloadError (x,y) -> toString "Parse meta global payload error" x y
         | ParseMetaGlobalError (x,y)    -> toString "Parse meta global error" x y
         | Base32DecodeError (x,y)       -> toString "base32Decode error" x y
-       
+        | CyclicBookmarkFolders (x,y)   -> toString "Cyclic bookmark folders error" x y
+
     let concatMessagesWith separator message =
         message
         |> List.map messageToString
