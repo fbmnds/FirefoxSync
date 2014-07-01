@@ -77,8 +77,7 @@ module Utilities =
             let concat s s' = sprintf "%s%s" s s'
             let update s acc = (acc |> revertEscape s) |> concat acc
             if s.Length < 2 then s |> concat acc
-            else
-                  
+            else          
                 let (s',s'') = (s.[0..1],s.[2..s.Length-1])
                 if   s' = pat1 then ('\\'.ToString())  |> concat acc |> revertEscape s''
                 elif s' = pat2 then ('"'.ToString())   |> concat acc |> revertEscape s''

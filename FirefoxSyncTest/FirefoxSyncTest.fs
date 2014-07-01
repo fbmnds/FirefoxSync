@@ -232,9 +232,9 @@ let ``Write bookmarks to disk`` () : unit =
     bm 
     |> Results.setOrFail
     |> fun bm' -> (bm',(bm' |> getFoldersAndLinks))
-    |> fun (x,(y,z)) -> (x |> bookmarkSeqToString "bm", 
-                         y |> bookmarkSeqToString "folders",
-                         z |> bookmarkSeqToString "links")
+    |> fun (x,(y,z)) -> (x |> bookmarkSeqToJsonString "bm", 
+                         y |> bookmarkSeqToJsonString "folders",
+                         z |> bookmarkSeqToJsonString "links")
     |> fun (x,y,z) -> [ writeStringToFile x    false file 
                         writeStringToFile "\n" true  file
                         writeStringToFile y    true  file

@@ -153,33 +153,34 @@ module Collections =
         |> JsonValue.Array
 
 
-    let bookmarkToString (bm: Bookmarks) =
-        let str'  (WeaveGUID x) = x
-        let str'' (URI x)       = x
+    let bookmarkToJsonString (bm: Bookmarks) =
+        let str x = x |> escapeString
+        let str'  (WeaveGUID x) = x |> escapeString
+        let str'' (URI x)       = x |> escapeString
         let arrayToString x = 
             x
             |> (String.concat "\",\"")
-            |> sprintf "[\"%s\"]"
+            |> fun s -> if s.Length > 0 then sprintf "[\"%s\"]" s else "[]"
         let arrayToString' x = 
             x
             |> Seq.map str'
             |> arrayToString
         let boolToString x = if x then "true" else "false"
         [ "{ \"id\"            : \"" ; (str' bm.id)            ; "\",\n" ;
-          "  \"type\"          : \"" ; bm.``type``             ; "\",\n" ;
-          "  \"title\"         : \"" ; bm.title                ; "\",\n" ;
-          "  \"parentName\"    : \"" ; bm.parentName           ; "\",\n" ;
+          "  \"type\"          : \"" ; (str bm.``type``)       ; "\",\n" ;
+          "  \"title\"         : \"" ; (str bm.title)          ; "\",\n" ;
+          "  \"parentName\"    : \"" ; (str bm.parentName)     ; "\",\n" ;
           "  \"bmkUri\"        : \"" ; (str'' bm.bmkUri)       ; "\",\n" ;
           "  \"tags\"          : "   ; (arrayToString bm.tags) ; ",\n"   ;
-          "  \"keyword\"       : \"" ; bm.keyword              ; "\",\n" ;
-          "  \"description\"   : \"" ; bm.description          ; "\",\n" ;
+          "  \"keyword\"       : \"" ; (str bm.keyword)        ; "\",\n" ;
+          "  \"description\"   : \"" ; (str bm.description)    ; "\",\n" ;
           "  \"loadInSidebar\" : "   ; ((boolToString) bm.loadInSidebar)  ; ",\n" ;
           "  \"parentid\"      : \"" ; (str' bm.parentid)      ; "\",\n" ;
           "  \"children\"      : "   ; (arrayToString' bm.children) ; " }" ]
         |> (String.concat "")
 
 
-    let bookmarkSeqToString name (bms: Bookmarks seq) =
-        [| for bm in bms do yield bookmarkToString bm |]   
+    let bookmarkSeqToJsonString name (bms: Bookmarks seq) =
+        [| for bm in bms do yield bookmarkToJsonString bm |]   
         |> String.concat ",\n"
         |> sprintf "{ \"%s\" : [%s] }" name
