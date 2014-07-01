@@ -7,6 +7,7 @@ open System.Net
 open System.Security.Cryptography
 open System.Text.RegularExpressions
 
+open Microsoft.FSharp.Collections
 
 open FSharp.Data
 open FSharp.Data.JsonExtensions
@@ -39,8 +40,6 @@ module Utilities =
             |> fun x -> if x = null then [||] else x 
         with | _ -> [||]
     
-
-
     let tryGetInteger (jsonvalue : JsonValue) property = 
         try
             property 
@@ -48,6 +47,7 @@ module Utilities =
             |> fun x -> match x with | Some x -> Some (x.AsInteger()) | _ -> None 
         with | _ -> None
 
+    // TODO: get rid of this
     let tryGetIntegerWithDefault (jsonvalue : JsonValue) defaultinteger property = 
         try
             property 
@@ -55,14 +55,55 @@ module Utilities =
             |> fun x -> match x with | Some x -> x.AsInteger() | _ -> defaultinteger 
         with | _ -> defaultinteger
 
+    let private pat1 = '\\'.ToString() + '\\'.ToString()
+    let private pat2 = '\\'.ToString() + '"'.ToString()
+
+    /// Escape the equotation of '\' and '"'.
+    /// Do not handle single quotes (ref. JSON.org string definition). 
+    let escapeString (s : string) =
+        s.ToCharArray()
+        |> Array.Parallel.map (fun c -> match c with 
+                                        | '\\' -> pat1
+                                        | '"'  -> pat2
+                                        | _    -> c.ToString())
+        |> String.concat ""
+    
+    /// Revert the escape quotation of '\' and '"';
+    /// return the mismatching result, if the input string was not correctly escaped.
+    /// Do not handle single quotes (ref. JSON.org string definition).
+    let relaxedUnescapeString (x : string) =
+
+        let rec revertEscape (s : string) acc =
+            let concat s s' = sprintf "%s%s" s s'
+            let update s acc = (acc |> revertEscape s) |> concat acc
+            if s.Length < 2 then s |> concat acc
+            else
+                  
+                let (s',s'') = (s.[0..1],s.[2..s.Length-1])
+                if   s' = pat1 then ('\\'.ToString())  |> concat acc |> revertEscape s''
+                elif s' = pat2 then ('"'.ToString())   |> concat acc |> revertEscape s''
+                else                (s.[0].ToString()) |> concat acc |> revertEscape s.[1..s.Length-1]
+        revertEscape x ""
+
+    /// Revert the escape quotation of '\' and '"' as Result<string> 
+    /// for correctly escaped input strings.
+    /// Do not handle single quotes (ref. JSON.org string definition).
+    let unescapeString (x : string) =
+        let res = relaxedUnescapeString x 
+        if x = escapeString res then Success res
+        else [ UnescapeJsonStringError((ErrorLabel (sprintf "Failed to unescape JSON-string '%s'" x)), 
+                                       (Stacktrace) (sprintf "Invalid unescaped JSON-string result '%s'" res)) ]
+             |> Failure
+         
+
     // Misc.
 
     let inline padArray len (c : 'T) (b : 'T[])  =
         [| for i in [0 .. len-1] do if i < b.Length then yield b.[i] else yield c |]
 
-    let stringToBytes (s : string) = s.ToCharArray() |> Array.map (fun x -> (byte) x)
-    let bytesToString (b : byte[]) = b |> Array.map (char) |> fun cs -> new string(cs)
-    let bytesToHex (b : byte[]) = b |> Array.map (sprintf "%x")
+    let stringToBytes (s : string) = s.ToCharArray() |> Array.Parallel.map (fun x -> (byte) x)
+    let bytesToString (b : byte[]) = b |> Array.Parallel.map (char) |> fun cs -> new string(cs)
+    let bytesToHex (b : byte[]) = b |> Array.Parallel.map (sprintf "%x")
 
     let inline isSubset set subset = 
         let set' = set |> Set.ofSeq
@@ -112,14 +153,14 @@ module Utilities =
         if s = "" then ""
         else
             s.ToUpper().ToCharArray() 
-            |> Array.map (fun x -> match x with | 'L' -> '8' | 'O' -> '9' | _ -> x )
+            |> Array.Parallel.map (fun x -> match x with | 'L' -> '8' | 'O' -> '9' | _ -> x )
             |> fun cs -> new string(cs)
 
     let undoBase32'8'9 (s : string) = 
         if s = "" then ""
         else
             s.ToUpper().ToCharArray() 
-            |> Array.map (fun x -> match x with | '8' -> 'L' | '9' -> 'O' | _ -> x )
+            |> Array.Parallel.map (fun x -> match x with | '8' -> 'L' | '9' -> 'O' | _ -> x )
             |> fun cs -> new string(cs)
     
     let generateWeaveGUID() = 

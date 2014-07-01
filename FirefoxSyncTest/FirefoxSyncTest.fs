@@ -47,6 +47,17 @@ let ``square should be positive`` (x:float) =
 (*   NUnit Tests                                                              *)
 (*----------------------------------------------------------------------------*)
 
+// JSON string quotation
+
+[<Test>]
+let ``Confirm JSON string quotation`` () : unit =
+    let x = "\\n \"  \\\"\"\\"
+    let x' = escapeString x
+    let x'' = unescapeString x' |> Results.setOrFail
+    x = x''
+    |> Assert.True
+
+
 // base32Decode
 
 // https://docs.services.mozilla.com/sync/storageformat5.html

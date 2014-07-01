@@ -39,6 +39,7 @@ module Results =
         | ParseMetaGlobalError (x,y)    -> toString "Parse meta global error" x y
         | Base32DecodeError (x,y)       -> toString "base32Decode error" x y
         | CyclicBookmarkFolders (x,y)   -> toString "Cyclic bookmark folders error" x y
+        | UnescapeJsonStringError(x,y)  -> toString "Received invalid escaped JSON-string" x y
 
     let concatMessagesWith separator message =
         message

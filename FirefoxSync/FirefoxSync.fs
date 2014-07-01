@@ -275,6 +275,7 @@ type FirefoxSyncMessage =
     | ParseMetaGlobalError of Error
     | Base32DecodeError of Error
     | CyclicBookmarkFolders of Error
+    | UnescapeJsonStringError of Error
 
 
 type Result<'TEntity> =
