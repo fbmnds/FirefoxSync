@@ -217,6 +217,9 @@ let ``Collection MetaGlobal`` () : unit =
     | _ -> false
     |> Assert.True
 
+
+// Internet Explorer
+
 [<Test>]
 let ``Get folders and links`` () : unit =
     let bm' = bm |> Results.setOrFail
@@ -225,6 +228,8 @@ let ``Get folders and links`` () : unit =
     |> fun (x,y) -> bm'.Length = x.Length + y.Length && x.Length > 0 && y.Length > 0
     |> Assert.True
 
+// Note: cannot write into the same file from  different tests
+//let file = Environment.GetEnvironmentVariable("HOME") + @"\Desktop\bookmarks.txt"
 
 [<Test>]
 let ``Write bookmarks to disk`` () : unit =
@@ -235,11 +240,25 @@ let ``Write bookmarks to disk`` () : unit =
     |> fun (x,(y,z)) -> (x |> bookmarkSeqToJsonString "bm", 
                          y |> bookmarkSeqToJsonString "folders",
                          z |> bookmarkSeqToJsonString "links")
-    |> fun (x,y,z) -> [ writeStringToFile x    false file 
-                        writeStringToFile "\n" true  file
-                        writeStringToFile y    true  file
-                        writeStringToFile "\n" true  file
-                        writeStringToFile z    true  file ]
+    |> fun (x,y,z) -> [ writeLineStringToFile false file x
+                        writeLineStringToFile true  file y
+                        writeLineStringToFile true  file z ]
     |> List.map Results.setOrFail
+    |> fun x -> true
+    |> Assert.IsTrue
+
+
+[<Test>]
+let ``Get folders and links, build folder paths and write to disk`` () : unit =
+    let file = Environment.GetEnvironmentVariable("HOME") + @"\Desktop\bookmarks2.txt"
+    bm
+    |> Results.setOrFail
+    |> getFoldersAndLinks
+    |> fun (x,y) -> x
+    |> buildFolderPaths "root"
+    |> Results.setOrFail
+    |> folderPathToJsonString
+    |> writeLineStringToFile true file
+    |> Results.setOrFail
     |> fun x -> true
     |> Assert.IsTrue

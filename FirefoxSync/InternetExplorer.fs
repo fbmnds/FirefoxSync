@@ -2,6 +2,7 @@
 
 open System.Collections.Generic
 
+open Utilities
 
 module InternetExplorer =
 
@@ -11,16 +12,16 @@ module InternetExplorer =
     let bookmarkToUrl (bm: Bookmarks) =
         if bm.``type`` = "folder" then None 
         else
-            ["[DEFAULT]\n"  ;
-             "BASEURL="     ; (str'' bm.bmkUri) ; "\n" ;
+            ["[DEFAULT]\n"          ;
+             "BASEURL="             ; (str'' bm.bmkUri)                ; "\n" ;
              "[InternetShortcut]\n" ; 
-             "URL="         ; (str'' bm.bmkUri) ; "\n" ;
-             "IDList="      ; bm.keyword        ; "\n" ;
-             "IconFile=\n"  ;
-             "IconIndex=\n" ;
-             "[Firefox]\n"  ;
-             "Description=" ; bm.description    ; "\n" ;
-             "Tags="        ; (bm.tags |> (String.concat ",")) ; "\n"]
+             "URL="                 ; (str'' bm.bmkUri)                ; "\n" ;
+             "IDList="              ; bm.keyword                       ; "\n" ;
+             "IconFile=\n"          ;
+             "IconIndex=\n"         ;
+             "[Firefox]\n"          ;
+             "Description="         ; bm.description                   ; "\n" ;
+             "Tags="                ; (bm.tags |> (String.concat ",")) ; "\n" ]
              |> (String.concat "")
              |> Some
 
@@ -40,40 +41,75 @@ module InternetExplorer =
         let dictOfPaths = new Dictionary<WeaveGUID, string list>(HashIdentity.Structural)
         if folders.IsEmpty then Success dictOfPaths
         else
-            let dictOfParents = new Dictionary<WeaveGUID, WeaveGUID>(HashIdentity.Structural)
+            let dictOfParents = new Dictionary<WeaveGUID, WeaveGUID option>(HashIdentity.Structural)
             let dictOfNames =   new Dictionary<WeaveGUID, string>(HashIdentity.Structural)
+            let isTop (id : WeaveGUID) = (str' id) = "toolbar"
+            let isTopLevel (id : WeaveGUID) = 
+                [ "places" ; "menu" ; "unfiled" ; "unknown" ] 
+                |> List.map (WeaveGUID) 
+                |> Set.ofList 
+                |> Set.contains id
             let folders' =
                 folders
                 |> List.filter 
-                    (fun bm -> dictOfNames.[bm.id] <- str'' bm.bmkUri
-                               if bm.parentid = ((WeaveGUID) "") 
+                    (fun bm -> 
+                               if isTop bm.id 
                                then
+                                   dictOfNames.[bm.id] <- root
+                                   dictOfParents.[bm.id] <- None
                                    dictOfPaths.[bm.id] <- [ root ]      // accept overwrites
                                    false
+                               elif isTopLevel bm.id
+                               then
+                                   dictOfNames.[bm.id] <- (str' bm.id)
+                                   dictOfParents.[bm.id] <- Some ((WeaveGUID) "toolbar")
+                                   dictOfPaths.[bm.id] <- [ root ; (str' bm.id) ]      // accept overwrites
+                                   false
                                else 
-                                   dictOfParents.[bm.id] <- bm.parentid // accept overwrites
+                                   dictOfNames.[bm.id] <- bm.title
+                                   dictOfParents.[bm.id] <- Some bm.parentid // accept overwrites
                                    true)
-                |> List.map (fun bm -> (bm, bm.parentid, [(str'' bm.bmkUri)], Set.ofList [bm.parentid]))
+                |> List.map (fun bm -> if isTop bm.id
+                                       then (bm, None,                         [root],       Set.ofList [])
+                                       elif isTopLevel bm.id
+                                       then (bm, Some ((WeaveGUID) "toolbar"), [str' bm.id], Set.ofList [])
+                                       else (bm, Some bm.parentid,             [bm.title],   Set.ofList []))
             if folders'.IsEmpty then Success dictOfPaths
             else
                 let checkCurrentFolder ((bm: Bookmarks),
-                                        (parentId: WeaveGUID),
+                                        (parentId: WeaveGUID option),
                                         (path: string list), 
                                         (ancestors: Set<WeaveGUID>)) =
-                    if ancestors.Contains parentId then 
-                        [ (CyclicBookmarkFolders 
-                            (((ErrorLabel) "Cyclic bookmark folder detected."),
-                             ((Stacktrace) (sprintf "Cycle detected at: '%s'." (str'' bm.bmkUri))))) ]
-                        |> Failure
-                    elif dictOfPaths.ContainsKey(parentId) then  
-                        dictOfPaths.[bm.id] <- List.append dictOfPaths.[parentId] path
-                        Success None
-                    else    
-                        (bm, dictOfParents.[parentId], dictOfNames.[parentId] :: path, ancestors.Add parentId)
-                        |> Some
-                        |> Success 
+                    match parentId with 
+                    | None -> (bm, None, [ root ], ancestors.Add ((WeaveGUID) "toolbar"))
+                              |> Some
+                              |> Success
+                    | Some parentId ->
+                        if ancestors.Contains parentId then 
+                            [ (CyclicBookmarkFolders 
+                                (((ErrorLabel) "Cyclic bookmark folder detected."),
+                                 ((Stacktrace) (sprintf "Cycle detected at: '%s',\n parentid '%s',\n ancestors '%A',\n path '%s'." 
+                                                    bm.title 
+                                                    (str' bm.parentid)
+                                                    ancestors
+                                                    (path |> String.concat ","))))) ]
+                            |> Failure
+                        elif dictOfPaths.ContainsKey(parentId) then  
+                            dictOfPaths.[bm.id] <- List.append dictOfPaths.[parentId] path
+                            Success None
+                        else    
+                            try 
+                                (bm, 
+                                 dictOfParents.[parentId], 
+                                 dictOfNames.[parentId] :: path, 
+                                 ancestors.Add parentId)
+                                |> Some
+                                |> Success 
+                            with
+                            | exn -> sprintf "Unknown Firefox bookmark root folder '%s'" (str' parentId) 
+                                     |> fun x -> Results.setError x exn UnknownFirefoxBookmarkRoot
                 let rec iterateOnFolder ((bm: Bookmarks),
-                                          (parentId: WeaveGUID),
+                                          (parentId: WeaveGUID option),
                                           (path: string list), 
                                           (ancestors: Set<WeaveGUID>)) =
                     let checkResult =
@@ -99,3 +135,15 @@ module InternetExplorer =
                                             ((Stacktrace) "Build folder path dictionary failed."))) ] @ y
                                      |> Failure
 
+
+    let folderPathToJsonString (folderPath : Dictionary<WeaveGUID, string list>) =
+        (folderPath.Keys, folderPath.Values)
+        |> fun (x,y) -> Seq.zip x y
+        |> Seq.map 
+            (fun (x,y) ->
+                 let y' = sprintf "\"%s\"" (y |> List.map escapeString |> String.concat "\", \"")
+                 if y'.Length > 2 
+                 then sprintf "\"%s\" : [%s]" (str' x) y'
+                 else sprintf "\"%s\" : []"   (str' x) )
+        |> String.concat ",\n"
+        |> sprintf "{ \"folderPaths\" : [\n%s\n] }"

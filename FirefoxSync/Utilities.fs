@@ -122,15 +122,19 @@ module Utilities =
         |> Array.filter (fun x -> if int x < 32 || int x > 126 then false else true) 
         |> fun x -> new string (x)
 
-    let writeStringToFile (text : string) append file =
+    let private writeStringToFile' append LF file (text : string) =
         let errLabel = (sprintf "Error while writing text to file '%s'" file)
         try
             use stream = new StreamWriter(file, append)
             stream.WriteLine(text)
+            if LF then stream.WriteLine()
             stream.Close()
             |> Success
         with | ex -> WriteFileError
                      |> Results.setError errLabel ex
+
+    let writeStringToFile     append file text = writeStringToFile' append false file text
+    let writeLineStringToFile append file text = writeStringToFile' append true  file text
 
     // http://www.fssnip.net/3y
     let getRecordFields (r: 'record) =
@@ -305,7 +309,7 @@ module Utilities =
                 try
                     match timeout with
                     | Some timeout -> req.Timeout <- timeout
-                    | _ -> req.Timeout <- 3 * 60 * 1000
+                    | _ -> req.Timeout <- 9 * 60 * 1000
                     use resp = req.GetResponse()
                     use strm = resp.GetResponseStream()
                     let text = (new StreamReader(strm)).ReadToEnd()

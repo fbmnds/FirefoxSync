@@ -79,21 +79,23 @@ module Collections =
           parentid      = "" |> (WeaveGUID)
           children      = [||] }
 
+    let parseBookmark bm = 
+        { id            = "id"            |> tryGetString bm |> (WeaveGUID)
+          ``type``      = "type"          |> tryGetString bm
+          title         = "title"         |> tryGetString bm
+          parentName    = "parentName"    |> tryGetString bm
+          bmkUri        = "bmkUri"        |> tryGetString bm |> (URI)
+          tags          = "tags"          |> tryGetArray bm  |> Array.map (fun x -> x.AsString())
+          keyword       = "keyword"       |> tryGetString bm
+          description   = "description"   |> tryGetString bm
+          loadInSidebar = "loadInSidebar" |> tryGetBoolean bm false
+          parentid      = "parentid"      |> tryGetString bm |> (WeaveGUID)
+          children      = "children"      |> tryGetArray bm  |> Array.map (fun x -> x.AsString() |> (WeaveGUID)) }
 
     let getBookmarksRelaxed secrets cryptokeys =
-        let parseBookmark bm = 
+        let parseBookmark' bm = 
             try
-                { id            = "id" |> tryGetString bm |> (WeaveGUID)
-                  ``type``      = "type" |> tryGetString bm
-                  title         = "title" |> tryGetString bm
-                  parentName    = "parentName" |> tryGetString bm
-                  bmkUri        = "bmkUri" |> tryGetString bm |> (URI)
-                  tags          = "tags" |> tryGetArray bm |> Array.map (fun x -> x.AsString())
-                  keyword       = "keyword" |> tryGetString bm
-                  description   = "description" |> tryGetString bm
-                  loadInSidebar = "loadInSidebar" |> tryGetBoolean bm false
-                  parentid      = "parentid" |> tryGetString bm |> (WeaveGUID)
-                  children      = "children" |> tryGetArray bm |> Array.map (fun x -> x.AsString() |> (WeaveGUID)) }
+                parseBookmark bm
             with
             | _ -> bm.ToString() |> emptyBookmark
         try 
@@ -101,23 +103,13 @@ module Collections =
             |> getDecryptedCollection secrets cryptokeys
             |> Results.setOrFail
             |> Array.map JsonValue.Parse
-            |> Array.map parseBookmark
+            |> Array.map parseBookmark'
         with | _ -> [||]
 
     let getBookmarks secrets cryptokeys =
-        let parseBookmark bm = 
+        let parseBookmark' bm = 
             try
-                { id            = "id" |> tryGetString bm |> (WeaveGUID)
-                  ``type``      = "type" |> tryGetString bm
-                  title         = "title" |> tryGetString bm
-                  parentName    = "parentName" |> tryGetString bm
-                  bmkUri        = "bmkUri" |> tryGetString bm |> (URI)
-                  tags          = "tags" |> tryGetArray bm |> Array.map (fun x -> x.AsString())
-                  keyword       = "keyword" |> tryGetString bm
-                  description   = "description" |> tryGetString bm
-                  loadInSidebar = "loadInSidebar" |> tryGetBoolean bm false
-                  parentid      = "parentid" |> tryGetString bm |> (WeaveGUID)
-                  children      = "children" |> tryGetArray bm |> Array.map (fun x -> x.AsString() |> (WeaveGUID)) }
+                parseBookmark bm
             with
             | _ -> failwith (sprintf "Failed to parse bookmark %s" (bm.ToString()))
         try 
@@ -125,7 +117,7 @@ module Collections =
             |> getDecryptedCollection secrets cryptokeys
             |> Results.setOrFail
             |> Array.map JsonValue.Parse
-            |> Array.map parseBookmark
+            |> Array.map parseBookmark'
             |> Success
         with 
         | ex -> Results.setError "" ex GetBookmarksError

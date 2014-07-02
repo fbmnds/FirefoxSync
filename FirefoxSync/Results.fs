@@ -23,23 +23,24 @@ module Results =
         | InvalidCredentials            -> "Invalid credentials"
         | HttpTimeOut                   -> "Http time out"
         // Other error messages
-        | ReadSecretFileError (x,y)     -> toString "Read secret file error" x y 
-        | ReadFileError (x,y)           -> toString "Read file error" x y 
-        | WriteFileError (x,y)          -> toString "Write file error" x y
-        | ClusterUrlError (x,y)         -> toString "Cluster url error" x y
+        | ReadSecretFileError (x,y)           -> toString "Read secret file error" x y 
+        | ReadFileError (x,y)                 -> toString "Read file error" x y 
+        | WriteFileError (x,y)                -> toString "Write file error" x y
+        | ClusterUrlError (x,y)               -> toString "Cluster url error" x y
         | EncryptedCollectionParseError (x,y) -> toString "Encrypted collection parse error" x y
-        | FirstCryptoKeyError (x,y)     -> toString "First crypto key error" x y
-        | DecryptCryptoKeysError (x,y)  -> toString "Decrypt crypto keys error" x y
-        | GetCryptoKeysFromStringError (x,y) -> toString "Get crypto keys from string error" x y
-        | GetCryptoKeysError (x,y)      -> toString "Get crypto keys error" x y
-        | GetCryptoKeysFromFileError (x,y) -> toString "Get crypto keys from file error" x y
-        | DecryptCollectionError (x,y)  -> toString "Decrypt collections error" x y
-        | GetBookmarksError (x,y)       -> toString "Get crypto keys error" x y
-        | ParseMetaGlobalPayloadError (x,y) -> toString "Parse meta global payload error" x y
-        | ParseMetaGlobalError (x,y)    -> toString "Parse meta global error" x y
-        | Base32DecodeError (x,y)       -> toString "base32Decode error" x y
-        | CyclicBookmarkFolders (x,y)   -> toString "Cyclic bookmark folders error" x y
-        | UnescapeJsonStringError(x,y)  -> toString "Received invalid escaped JSON-string" x y
+        | FirstCryptoKeyError (x,y)           -> toString "First crypto key error" x y
+        | DecryptCryptoKeysError (x,y)        -> toString "Decrypt crypto keys error" x y
+        | GetCryptoKeysFromStringError (x,y)  -> toString "Get crypto keys from string error" x y
+        | GetCryptoKeysError (x,y)            -> toString "Get crypto keys error" x y
+        | GetCryptoKeysFromFileError (x,y)    -> toString "Get crypto keys from file error" x y
+        | DecryptCollectionError (x,y)        -> toString "Decrypt collections error" x y
+        | GetBookmarksError (x,y)             -> toString "Get crypto keys error" x y
+        | ParseMetaGlobalPayloadError (x,y)   -> toString "Parse meta global payload error" x y
+        | ParseMetaGlobalError (x,y)          -> toString "Parse meta global error" x y
+        | Base32DecodeError (x,y)             -> toString "base32Decode error" x y
+        | CyclicBookmarkFolders (x,y)         -> toString "Cyclic bookmark folders error" x y
+        | UnescapeJsonStringError(x,y)        -> toString "Received invalid escaped JSON-string" x y
+        | UnknownFirefoxBookmarkRoot(x,y)     -> toString "Caught unknown Firefox bookmark root" x y
 
     let concatMessagesWith separator message =
         message
