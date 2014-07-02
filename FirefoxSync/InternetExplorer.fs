@@ -106,8 +106,12 @@ module InternetExplorer =
                                 |> Some
                                 |> Success 
                             with
-                            | exn -> sprintf "Unknown Firefox bookmark root folder '%s'" (str' parentId) 
-                                     |> fun x -> Results.setError x exn UnknownFirefoxBookmarkRoot
+                            | exn -> (bm, 
+                                      dictOfParents.[((WeaveGUID) "unknown")], 
+                                      dictOfNames.[((WeaveGUID) "unknown")] :: path, 
+                                      ancestors.Add ((WeaveGUID) "unknown"))
+                                      |> Some
+                                      |> Success
                 let rec iterateOnFolder ((bm: Bookmarks),
                                           (parentId: WeaveGUID option),
                                           (path: string list), 

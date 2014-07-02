@@ -258,7 +258,7 @@ let ``Get folders and links, build folder paths and write to disk`` () : unit =
     |> buildFolderPaths "root"
     |> Results.setOrFail
     |> folderPathToJsonString
-    |> writeLineStringToFile true file
+    |> writeLineStringToFile false file
     |> Results.setOrFail
     |> fun x -> true
     |> Assert.IsTrue
