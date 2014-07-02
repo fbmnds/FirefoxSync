@@ -255,7 +255,7 @@ let ``Get folders and links, build folder paths and write to disk`` () : unit =
     |> Results.setOrFail
     |> getFoldersAndLinks
     |> fun (x,y) -> x
-    |> buildFolderPaths "root"
+    |> buildFolderPaths
     |> Results.setOrFail
     |> folderPathToJsonString
     |> writeLineStringToFile false file

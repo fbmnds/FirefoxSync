@@ -37,7 +37,7 @@ module InternetExplorer =
                     (folder, (bm :: links))) ([],[]) 
 
 
-    let buildFolderPaths (root: string) (folders: Bookmarks list) =
+    let buildFolderPaths (folders: Bookmarks list) =
         let dictOfPaths = new Dictionary<WeaveGUID, string list>(HashIdentity.Structural)
         if folders.IsEmpty then Success dictOfPaths
         else
@@ -53,24 +53,24 @@ module InternetExplorer =
                 folders
                 |> List.filter 
                     (fun bm -> 
-                               if isTop bm.id 
-                               then
-                                   dictOfNames.[bm.id] <- root
-                                   dictOfParents.[bm.id] <- None
-                                   dictOfPaths.[bm.id] <- [ root ]      // accept overwrites
-                                   false
-                               elif isTopLevel bm.id
-                               then
-                                   dictOfNames.[bm.id] <- (str' bm.id)
-                                   dictOfParents.[bm.id] <- Some ((WeaveGUID) "toolbar")
-                                   dictOfPaths.[bm.id] <- [ root ; (str' bm.id) ]      // accept overwrites
-                                   false
-                               else 
-                                   dictOfNames.[bm.id] <- bm.title
-                                   dictOfParents.[bm.id] <- Some bm.parentid // accept overwrites
-                                   true)
+                        if isTop bm.id 
+                        then
+                            //dictOfNames.[bm.id] <- root
+                            dictOfParents.[bm.id] <- None
+                            dictOfPaths.[bm.id] <- []      // accept overwrites
+                            false
+                        elif isTopLevel bm.id
+                        then
+                            dictOfNames.[bm.id] <- (str' bm.id)
+                            dictOfParents.[bm.id] <- Some ((WeaveGUID) "toolbar")
+                            dictOfPaths.[bm.id] <- [ (str' bm.id) ]      // accept overwrites
+                            false
+                        else 
+                            dictOfNames.[bm.id] <- bm.title
+                            dictOfParents.[bm.id] <- Some bm.parentid // accept overwrites
+                            true)
                 |> List.map (fun bm -> if isTop bm.id
-                                       then (bm, None,                         [root],       Set.ofList [])
+                                       then (bm, None,                         [],       Set.ofList [])
                                        elif isTopLevel bm.id
                                        then (bm, Some ((WeaveGUID) "toolbar"), [str' bm.id], Set.ofList [])
                                        else (bm, Some bm.parentid,             [bm.title],   Set.ofList []))
@@ -81,7 +81,7 @@ module InternetExplorer =
                                         (path: string list), 
                                         (ancestors: Set<WeaveGUID>)) =
                     match parentId with 
-                    | None -> (bm, None, [ root ], ancestors.Add ((WeaveGUID) "toolbar"))
+                    | None -> (bm, None, [], ancestors.Add ((WeaveGUID) "toolbar"))
                               |> Some
                               |> Success
                     | Some parentId ->
@@ -151,3 +151,11 @@ module InternetExplorer =
                  else sprintf "\"%s\" : []"   (str' x) )
         |> String.concat ",\n"
         |> sprintf "{ \"folderPaths\" : [\n%s\n] }"
+
+
+    let buildFolderTree (dictOfFolders : Dictionary<WeaveGUID, string list>) =
+        dictOfFolders
+        |> fun x -> Array.zip [|x.Keys|] [|x.Values|]
+        |> Array.sortWith (fun (x,y) (x',y') -> if   y.Count < y'.Count then -1
+                                                elif y.Count = y'.Count then 0
+                                                else                         1)

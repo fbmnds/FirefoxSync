@@ -277,7 +277,7 @@ type FirefoxSyncMessage =
     // Firefox Bookmark errors
     | CyclicBookmarkFolders of Error
     | UnescapeJsonStringError of Error
-    | UnknownFirefoxBookmarkRoot of Error
+    
 
 type Result<'TEntity> =
     | Success of 'TEntity

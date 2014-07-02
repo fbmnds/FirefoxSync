@@ -40,7 +40,7 @@ module Results =
         | Base32DecodeError (x,y)             -> toString "base32Decode error" x y
         | CyclicBookmarkFolders (x,y)         -> toString "Cyclic bookmark folders error" x y
         | UnescapeJsonStringError(x,y)        -> toString "Received invalid escaped JSON-string" x y
-        | UnknownFirefoxBookmarkRoot(x,y)     -> toString "Caught unknown Firefox bookmark root" x y
+        
 
     let concatMessagesWith separator message =
         message
