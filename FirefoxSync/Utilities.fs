@@ -95,6 +95,16 @@ module Utilities =
              |> Failure
          
 
+    // Windows Registry
+
+    let getIExplorerFavoritesFolder () =
+        let x = Microsoft.Win32.Registry.CurrentUser.OpenSubKey "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+        try
+            (x.GetValue ("Favorites")).ToString() |> Success
+        with 
+        | exn -> Results.setError "" exn InternetExplorerFavoritesRegistryError
+
+
     // Misc.
 
     let inline padArray len (c : 'T) (b : 'T[])  =
@@ -135,6 +145,17 @@ module Utilities =
 
     let writeStringToFile     append file text = writeStringToFile' append false file text
     let writeLineStringToFile append file text = writeStringToFile' append true  file text
+
+    let tryCreateDirectory path =
+        try 
+            if Directory.Exists path then Success path
+            else
+                path
+                |> Directory.CreateDirectory 
+                |> fun x -> Success path
+        with
+        | exn -> CreateDirectoryError 
+                    |> Results.setError (sprintf "Failed at path '%s'" path) exn 
 
     // http://www.fssnip.net/3y
     let getRecordFields (r: 'record) =

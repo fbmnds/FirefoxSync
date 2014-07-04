@@ -262,3 +262,16 @@ let ``Get folders and links, build folder paths and write to disk`` () : unit =
     |> Results.setOrFail
     |> fun x -> true
     |> Assert.IsTrue
+
+[<Test>]
+let ``Create folder tree 'Firefox'`` () =
+    bm
+    |> Results.setOrFail
+    |> getFoldersAndLinks
+    |> fun (x,y) -> x
+    |> buildFolderPaths
+    |> Results.setOrFail
+    |> createFolderTree "Firefox"
+    |> Results.setOrFail
+    |> fun x -> x.Length = 0
+    |> Assert.True

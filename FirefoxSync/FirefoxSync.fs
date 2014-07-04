@@ -274,10 +274,12 @@ type FirefoxSyncMessage =
     | ParseMetaGlobalPayloadError of Error
     | ParseMetaGlobalError of Error
     | Base32DecodeError of Error
-    // Firefox Bookmark errors
+    // Firefox bookmark errors
     | CyclicBookmarkFolders of Error
     | UnescapeJsonStringError of Error
-    
+    // InternetExplorer bookmark error
+    | InternetExplorerFavoritesRegistryError of Error
+    | CreateDirectoryError of Error
 
 type Result<'TEntity> =
     | Success of 'TEntity

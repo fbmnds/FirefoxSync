@@ -40,7 +40,9 @@ module Results =
         | Base32DecodeError (x,y)             -> toString "base32Decode error" x y
         | CyclicBookmarkFolders (x,y)         -> toString "Cyclic bookmark folders error" x y
         | UnescapeJsonStringError(x,y)        -> toString "Received invalid escaped JSON-string" x y
-        
+        | InternetExplorerFavoritesRegistryError (x,y) -> 
+            toString "Registry read error for Internet Explorer 'Favorites' folder" x y
+        | CreateDirectoryError (x,y)          -> toString "Failed to create directory" x y
 
     let concatMessagesWith separator message =
         message
@@ -74,3 +76,11 @@ module Results =
         match result with 
         | Success result' -> result'
         | Failure result' -> failwith (sprintf "Failed to set result:\n %s" (concatMessagesWith "\n" result'))
+
+    type MaybeBuilder() =
+        member this.Zero() = Success None
+        member this.Yield(x) = Success (Some x)
+        member this.Bind(m, f) = bind f m
+        member this.Return(x)  = Success x
+    
+    let maybe = MaybeBuilder()

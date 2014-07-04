@@ -1,7 +1,9 @@
 ﻿namespace FirefoxSync
 
 open System.Collections.Generic
+open System.IO
 
+open Results
 open Utilities
 
 module InternetExplorer =
@@ -153,9 +155,22 @@ module InternetExplorer =
         |> sprintf "{ \"folderPaths\" : [\n%s\n] }"
 
 
-    let buildFolderTree (dictOfFolders : Dictionary<WeaveGUID, string list>) =
-        dictOfFolders
-        |> fun x -> Array.zip [|x.Keys|] [|x.Values|]
-        |> Array.sortWith (fun (x,y) (x',y') -> if   y.Count < y'.Count then -1
-                                                elif y.Count = y'.Count then 0
-                                                else                         1)
+    let createFolderTree root (dictOfFolders : Dictionary<WeaveGUID, string list>) =
+        let separator  = Path.DirectorySeparatorChar.ToString()
+        maybe {
+            let! path = getIExplorerFavoritesFolder ()
+            let! unknownFolder = sprintf "%s%s%s" path separator "unknown" |> tryCreateDirectory
+            return 
+                dictOfFolders
+                |> fun x -> Seq.zip x.Keys x.Values
+                |> Array.ofSeq
+                |> Array.sortWith (fun (x,y) (x',y') -> if   y.Length < y'.Length then 1
+                                                        elif y.Length = y'.Length then 0
+                                                        else                          -1)
+                |> Array.Parallel.map (fun (x,y) -> (x,(y |> String.concat separator)))
+                |> Array.Parallel.map (fun (x,y) -> (x,sprintf "%s%s%s%s%s" path separator root separator y))
+                |> Array.map (fun (x,y) -> (x,y |> tryCreateDirectory))
+                |> Array.filter (fun (x,y) -> match y with | Failure y -> true | _ -> false)
+                |> Array.Parallel.map (fun (x,y) -> x) }
+
+ 
