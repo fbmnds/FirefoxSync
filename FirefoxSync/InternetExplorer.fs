@@ -5,6 +5,7 @@ open System.IO
 
 open Results
 open Utilities
+open Collections
 
 module InternetExplorer =
 
@@ -170,7 +171,52 @@ module InternetExplorer =
                 |> Array.Parallel.map (fun (x,y) -> (x,(y |> String.concat separator)))
                 |> Array.Parallel.map (fun (x,y) -> (x,sprintf "%s%s%s%s%s" path separator root separator y))
                 |> Array.map (fun (x,y) -> (x,y |> tryCreateDirectory))
-                |> Array.filter (fun (x,y) -> match y with | Failure y -> true | _ -> false)
-                |> Array.Parallel.map (fun (x,y) -> x) }
+                |> Array.filter (fun (x,y) -> match y with | Success y -> true | _ -> false)
+                |> (dict) 
+        }
 
  
+    let importBookmarks secrets cryptokeys root =
+        let separator  = Path.DirectorySeparatorChar
+        maybe {
+            let! favoritesFolder = (getIExplorerFavoritesFolder())
+            let unknownFolder = (sprintf "%s%c%s%c" favoritesFolder separator "unknown" separator)
+            let! bms = getBookmarks secrets cryptokeys
+            let (folders,links) = getFoldersAndLinks bms
+            let! dictOfFolders' = buildFolderPaths folders
+            let! dictOfFolders = createFolderTree root dictOfFolders'
+            let (links',linksFailedToUrlTextConversion) = 
+                links 
+                |> List.map (fun x -> (x, (bookmarkToUrl x)))
+                |> List.fold  
+                    (fun (hasUrl,failed) (bm,text) -> 
+                        if text.IsSome 
+                        then
+                            (((bm.id, bm.parentid, bm.title, text.Value) :: hasUrl), failed)
+                        else 
+                            (hasUrl, (bm.id :: failed))) 
+                    ([],[]) 
+                
+            let (links'',linksFailedFolderLookup) = 
+                links'
+                |> List.fold
+                    (fun (toPathOk,failed) (id,folder,title,text) -> 
+                        match (dictOfFolders.TryGetValue folder) with
+                        | (true, Success x) -> 
+                            ((id, (sprintf "%s%c%s.url" x separator (cleanFilename title)), text) :: toPathOk, failed)
+                        | _ -> 
+                            ((id, (sprintf "%s%s.url" unknownFolder (cleanFilename title)), text) :: toPathOk, (id :: failed)))
+                    ([],[]) 
+
+            let (links''',linksFailedWriteToDisk) =
+                links''
+                |> List.fold 
+                    (fun (toFileOk,failed) (id, path, text) -> 
+                        match (writeStringToFile false path text) with 
+                        | Success x -> ((id :: toFileOk),failed)
+                        | Failure x -> (toFileOk, (id :: failed)))
+                    ([],[])
+
+            return (links, linksFailedToUrlTextConversion, linksFailedFolderLookup, linksFailedWriteToDisk)
+        }
+

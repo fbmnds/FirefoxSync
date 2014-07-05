@@ -157,6 +157,12 @@ module Utilities =
         | exn -> CreateDirectoryError 
                     |> Results.setError (sprintf "Failed at path '%s'" path) exn 
 
+    let cleanFilename (filename : string) =
+        let invalidChars = Path.GetInvalidFileNameChars() |> Set.ofArray
+        filename.ToCharArray()
+        |> Array.map (fun c -> if invalidChars.Contains c then '-' else c)
+        |> fun cs -> new string(cs)
+
     // http://www.fssnip.net/3y
     let getRecordFields (r: 'record) =
         typeof<'record> |> Microsoft.FSharp.Reflection.FSharpType.GetRecordFields 

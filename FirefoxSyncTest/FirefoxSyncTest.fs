@@ -1,6 +1,7 @@
 ﻿module FirefoxSyncTest
 
 open System
+open System.IO
 open Xunit
 open NUnit.Framework
 open NUnit.Framework.Constraints
@@ -14,6 +15,9 @@ open FirefoxSync.GeneralInfo
 open FirefoxSync.Collections
 open FirefoxSync.SecretStore
 open FirefoxSync.InternetExplorer
+
+let minNumberOfBookmarks = 600
+let minNumberOfBookmarkFolders = 40
 
 let setLog (logger : ILogger) = 
     let log (x: string) = logger.Log "%s" [(LogMessageBaseType.String) x]
@@ -66,7 +70,7 @@ let ``Confirm JSON string quotation`` () : unit =
 // Python: \xc7\x1a\xa7\xcb\xd8\xb8\x2a\x8f\xf6\xed\xa5\x5c\x39\x47\x9f\xd2
 //
 [<Test>]
-let ``base32Decode (mozilla docs example)`` () : unit =
+let ``Verify base32Decode (mozilla docs example)`` () : unit =
     let x =
         "Y4NKPS6YXAVI75XNUVODSR472I" 
         |> base32'8'9Decode 
@@ -98,7 +102,7 @@ let ``base32Decode (mozilla docs example)`` () : unit =
 //      -> 0xbf9e48ac50a2fcc400ae4d30a58dc6a83a7720c32f58c60fd9d02db16e406216
 //
 [<Test>]
-let ``buildSyncKeyBundle (mozilla docs example)`` () : unit = 
+let ``Build SyncKey bundle (mozilla docs example)`` () : unit = 
     let ff_skb' = "Y4NKPS6YXAVI75XNUVODSR472I" 
                   |> base32'8'9Decode
                   |> Results.setOrFail
@@ -120,7 +124,7 @@ let ``buildSyncKeyBundle (mozilla docs example)`` () : unit =
 let s' = SecretStore.setSecretByDefaultFile()
 
 [<Test>]
-let ``setSecretByDefaultFile`` () : unit =
+let ``Set secret by default file`` () : unit =
     Assert.DoesNotThrow( fun x -> s' |> Results.setOrFail |> ignore )
 
 let s = s' |> Results.setOrFail
@@ -129,7 +133,7 @@ let s = s' |> Results.setOrFail
 // writeCryptoKeysToDisk
 
 [<Test>]
-let ``writeCryptoKeysToDisk`` () : unit = 
+let ``Write CryptoKeys to disk`` () : unit = 
     writeCryptoKeysToDisk s.username s.password None
     |> Results.setOrFail
     |> fun _ -> true
@@ -139,7 +143,7 @@ let ``writeCryptoKeysToDisk`` () : unit =
 // getRecordFields/getRecordField
 
 [<Test>]
-let ``getRecordFields/getRecordField`` () : unit = 
+let ``Verify getRecordFields/getRecordField`` () : unit = 
     let x = {value = "value"; name = "name"; ``type`` = "type"; }
     let x' = getRecordFields x
     let x'' = { value = getRecordField x x'.[0]; 
@@ -152,7 +156,7 @@ let ``getRecordFields/getRecordField`` () : unit =
 // GeneralInfo
 
 [<Test>]
-let ``fetchInfoCollection/InfoQuota`` () : unit = 
+let ``Fetch InfoCollection/InfoQuota`` () : unit = 
     [ fetchInfoCollections s.username s.password
       fetchInfoQuota s.username s.password
       fetchInfoCollectionUsage s.username s.password
@@ -180,7 +184,7 @@ let ``Collection Bookmark (retrieve bookmarks)`` () : unit =
     log  (bm.ToString())
     bm
     |> Results.setOrFail
-    |> fun x -> x.Length > 600 
+    |> fun x -> x.Length > minNumberOfBookmarks 
     |> Assert.True
 
 [<Test>]
@@ -265,13 +269,28 @@ let ``Get folders and links, build folder paths and write to disk`` () : unit =
 
 [<Test>]
 let ``Create folder tree 'Firefox'`` () =
-    bm
-    |> Results.setOrFail
+    let bm' = bm |> Results.setOrFail
+    bm'
     |> getFoldersAndLinks
     |> fun (x,y) -> x
     |> buildFolderPaths
     |> Results.setOrFail
     |> createFolderTree "Firefox"
     |> Results.setOrFail
-    |> fun x -> x.Length = 0
+    |> fun x -> x.Keys.Count > minNumberOfBookmarkFolders
+    |> Assert.True
+
+[<Test>]
+let ``Import bookmarks to IExplorer`` () =
+    getIExplorerFavoritesFolder ()
+    |> Results.setOrFail
+    |> fun x -> Directory.Delete ((sprintf "%s\\Firefox" x) , true)
+    let cryptokeys = 
+        getCryptokeysFromFile s None 
+        |> Results.setOrFail
+    importBookmarks s cryptokeys "Firefox"
+    |> Results.setOrFail
+    |> fun (a,b,c,d) -> 
+        log (sprintf "Length:\n a = %d b = %d c = %d d = %d" a.Length b.Length c.Length d.Length)
+        a.Length > minNumberOfBookmarks
     |> Assert.True
