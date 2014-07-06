@@ -43,6 +43,7 @@ module Results =
         | InternetExplorerFavoritesRegistryError (x,y) -> 
             toString "Registry read error for Internet Explorer 'Favorites' folder" x y
         | CreateDirectoryError (x,y)          -> toString "Failed to create directory" x y
+        | GetPasswordsError (x,y)             -> toString "Get password error" x y
 
     let concatMessagesWith separator message =
         message

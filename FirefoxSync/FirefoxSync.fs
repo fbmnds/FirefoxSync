@@ -161,8 +161,8 @@ type History =
       ``type`` : HistoryTransition }
     
 type Passwords = 
-    { hostname      : string
-      formSubmitURL : string
+    { hostname      : URI
+      formSubmitURL : URI
       httpRealm     : string
       username      : string
       password      : string
@@ -269,14 +269,15 @@ type FirefoxSyncMessage =
     | GetCryptoKeysFromStringError of Error
     | GetCryptoKeysError of Error
     | GetCryptoKeysFromFileError of Error
+    | ParseMetaGlobalError of Error
+    | Base32DecodeError of Error
+    // Firefox collections errors
     | DecryptCollectionError of Error
     | GetBookmarksError of Error
     | ParseMetaGlobalPayloadError of Error
-    | ParseMetaGlobalError of Error
-    | Base32DecodeError of Error
-    // Firefox bookmark errors
     | CyclicBookmarkFolders of Error
     | UnescapeJsonStringError of Error
+    | GetPasswordsError of Error
     // InternetExplorer bookmark error
     | InternetExplorerFavoritesRegistryError of Error
     | CreateDirectoryError of Error

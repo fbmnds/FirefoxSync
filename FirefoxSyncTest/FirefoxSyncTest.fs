@@ -18,6 +18,7 @@ open FirefoxSync.InternetExplorer
 
 let minNumberOfBookmarks = 600
 let minNumberOfBookmarkFolders = 40
+let minNumberOfPasswords = 30
 
 let setLog (logger : ILogger) = 
     let log (x: string) = logger.Log "%s" [(LogMessageBaseType.String) x]
@@ -28,7 +29,11 @@ let log = setLog (new ConsoleLogger())
 #else
 let log = setLog (new PseudoLogger())
 #endif
-
+let logResult x = match x with 
+                  | Success x -> log (sprintf "%A" x) 
+                  | Failure x -> x 
+                                 |> List.map (fun x' -> log (Results.messageToString x'))
+                                 |> ignore
 
 (*----------------------------------------------------------------------------*)
 (*   xUnit Tests                                                              *)
@@ -40,7 +45,7 @@ let log = setLog (new PseudoLogger())
 // http://www.clear-lines.com/blog/post/FsCheck-and-XUnit-is-The-Bomb.aspx
 //
 [<Property>]
-let ``square should be positive failing`` (x:float) =
+let ``square should be positive (intentionally failing test)`` (x:float) =
     x * x >= 0.
 //
 [<Property>]
@@ -221,6 +226,16 @@ let ``Collection MetaGlobal`` () : unit =
     | _ -> false
     |> Assert.True
 
+[<Test>]
+let ``Collection Password (retrieve password)`` () : unit =    
+    getCryptokeysFromFile s None 
+    |> Results.setOrFail
+    |> getPasswords s
+    |> fun x -> logResult x; x
+    |> Results.setOrFail
+    |> fun x -> x.Length > minNumberOfPasswords 
+    |> Assert.True
+
 
 // Internet Explorer
 
@@ -294,3 +309,4 @@ let ``Import bookmarks to IExplorer`` () =
         log (sprintf "Length:\n a = %d b = %d c = %d d = %d" a.Length b.Length c.Length d.Length)
         a.Length > minNumberOfBookmarks
     |> Assert.True
+

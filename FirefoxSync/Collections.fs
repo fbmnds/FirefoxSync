@@ -176,3 +176,30 @@ module Collections =
         [| for bm in bms do yield bookmarkToJsonString bm |]   
         |> String.concat ",\n"
         |> sprintf "{ \"%s\" : [%s] }" name
+
+
+    let parsePassword pw = 
+        { hostname      = "hostname"      |> tryGetString pw |> (URI)
+          formSubmitURL = "formSubmitURL" |> tryGetString pw |> (URI)
+          httpRealm     = "httpRealm"     |> tryGetString pw
+          username      = "username"      |> tryGetString pw
+          password      = "password"      |> tryGetString pw
+          usernameField = "usernameField" |> tryGetString pw
+          passwordField = "passwordField" |> tryGetString pw }
+
+
+    let getPasswords secrets cryptokeys =
+        let parsePassword' pw = 
+            try
+                parsePassword pw
+            with
+            | _ -> failwith (sprintf "Failed to parse password %s" (pw.ToString()))
+        try 
+            "passwords" 
+            |> getDecryptedCollection secrets cryptokeys
+            |> Results.setOrFail
+            |> Array.map JsonValue.Parse
+            |> Array.map parsePassword'
+            |> Success
+        with 
+        | ex -> Results.setError "" ex GetPasswordsError
