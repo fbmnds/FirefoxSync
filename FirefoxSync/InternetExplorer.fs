@@ -8,6 +8,8 @@ open Utilities
 open Collections
 
 module InternetExplorer =
+    
+    let IExplorerPasswordStore = @"%USERPROFILE%\AppData\Local\Microsoft\Credentials"
 
     let private str'  (WeaveGUID x) = x
     let private str'' (URI x)       = x
